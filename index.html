@@ -1,0 +1,263 @@
+---
+layout: default
+title: "Agentry, Inc. - Building Infrastructure for the Agentic Internet"
+---
+
+<main>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i data-lucide="zap"></i>
+                    <span>AMTP Protocol v1.0</span>
+                </div>
+                
+                <h1>Infrastructure for the Agentic Internet</h1>
+                <p class="hero-subtitle">Enabling autonomous systems to communicate securely and reliably across boundaries</p>
+                <p class="hero-description">
+                    Agentry builds the communication backbone for the agentic internet through <strong>AMTP (Agent Message Transfer Protocol)</strong> — 
+                    a federated, asynchronous protocol for structured, schema-aware communication between AI agents, systems, and organizations.
+                </p>
+                
+                <div class="hero-cta">
+                    <a href="/products.html" class="btn btn-primary">
+                        <i data-lucide="rocket"></i>
+                        Get Started
+                    </a>
+                    <a href="/docs.html" class="btn btn-secondary">
+                        <i data-lucide="book-open"></i>
+                        View Documentation
+                    </a>
+                </div>
+                
+                <!-- Protocol Code Example -->
+                <div class="code-block">
+                    <pre><code>// AMTP Message Example
+{
+  "version": "1.0",
+  "from": "agent@company.com",
+  "to": "workflow@partner.com",
+  "messageId": "msg_123456789",
+  "timestamp": "2025-01-27T10:30:00Z",
+  "schema": "https://schemas.agentry.site/workflow/v1",
+  "payload": {
+    "action": "process_order",
+    "data": { "orderId": "ORD-001" }
+  },
+  "signature": "sha256:abc123..."
+}</code></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Features Section -->
+    <section class="section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Why AMTP?</h2>
+                <p class="section-subtitle">
+                    AMTP fills the gap between email (SMTP) and API brokers, providing structured, 
+                    reliable communication specifically designed for autonomous systems.
+                </p>
+            </div>
+            
+            <div class="card-grid">
+                <div class="card">
+                    <div class="feature-icon">
+                        <i data-lucide="globe"></i>
+                    </div>
+                    <h3>Federated Architecture</h3>
+                    <p>No central authority required. Agents discover each other through DNS, enabling true decentralization and avoiding vendor lock-in.</p>
+                </div>
+                
+                <div class="card">
+                    <div class="feature-icon">
+                        <i data-lucide="shield-check"></i>
+                    </div>
+                    <h3>Secure & Reliable</h3>
+                    <p>Built-in digital signatures, at-least-once delivery guarantees, and schema validation ensure message integrity and reliability.</p>
+                </div>
+                
+                <div class="card">
+                    <div class="feature-icon">
+                        <i data-lucide="layers"></i>
+                    </div>
+                    <h3>Schema-Aware</h3>
+                    <p>Structured JSON messages with schema validation enable type-safe communication and automatic API generation.</p>
+                </div>
+                
+                <div class="card">
+                    <div class="feature-icon">
+                        <i data-lucide="workflow"></i>
+                    </div>
+                    <h3>Workflow Coordination</h3>
+                    <p>Native support for multi-agent workflows, coordination patterns, and complex business process automation.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Products Overview -->
+    <section class="section" style="background: var(--bg-secondary);">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Our Products</h2>
+                <p class="section-subtitle">
+                    From open-source gateway to managed cloud platform, we provide the complete infrastructure stack for agentic communication.
+                </p>
+            </div>
+            
+            <div class="card-grid">
+                <div class="card">
+                    <div class="feature-icon">
+                        <i data-lucide="server"></i>
+                    </div>
+                    <h3>Agentry Gateway</h3>
+                    <p><strong>Open Source</strong> - Production-grade AMTP gateway with federated addressing, DNS discovery, and multi-agent coordination.</p>
+                    <ul class="feature-list" style="margin-top: 1rem;">
+                        <li>Federated addressing (agent@domain)</li>
+                        <li>Push and pull delivery models</li>
+                        <li>Built-in SMTP bridge</li>
+                        <li>Docker & CLI deployment</li>
+                    </ul>
+                    <a href="/products.html#gateway" class="btn btn-secondary" style="margin-top: 1rem;">
+                        Learn More
+                    </a>
+                </div>
+                
+                <div class="card">
+                    <div class="feature-icon">
+                        <i data-lucide="cloud"></i>
+                    </div>
+                    <h3>Agentry Cloud</h3>
+                    <p><strong>Managed Platform</strong> - Fully managed, multi-tenant AMTP gateway with automatic DNS provisioning and SLA-backed reliability.</p>
+                    <ul class="feature-list" style="margin-top: 1rem;">
+                        <li>Automatic DNS & TLS setup</li>
+                        <li>Message retention & audit logs</li>
+                        <li>Real-time monitoring</li>
+                        <li>WebAssembly sandbox support</li>
+                    </ul>
+                    <a href="/products.html#cloud" class="btn btn-secondary" style="margin-top: 1rem;">
+                        Learn More
+                    </a>
+                </div>
+                
+                <div class="card">
+                    <div class="feature-icon">
+                        <i data-lucide="building"></i>
+                    </div>
+                    <h3>Enterprise Solutions</h3>
+                    <p><strong>Custom Deployments</strong> - Tailored AMTP implementations for regulated environments and mission-critical applications.</p>
+                    <ul class="feature-list" style="margin-top: 1rem;">
+                        <li>Air-gapped deployments</li>
+                        <li>Custom workflow integration</li>
+                        <li>Compliance & security audits</li>
+                        <li>Dedicated support</li>
+                    </ul>
+                    <a href="/products.html#enterprise" class="btn btn-secondary" style="margin-top: 1rem;">
+                        Learn More
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Use Cases -->
+    <section class="section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Perfect For</h2>
+                <p class="section-subtitle">
+                    AMTP enables secure, structured communication across a wide range of autonomous system scenarios.
+                </p>
+            </div>
+            
+            <div class="card-grid">
+                <div class="card">
+                    <div class="feature-icon">
+                        <i data-lucide="bot"></i>
+                    </div>
+                    <h3>AI Agent Networks</h3>
+                    <p>Connect LangChain, CrewAI, and custom AI agents across organizations with structured, reliable messaging.</p>
+                </div>
+                
+                <div class="card">
+                    <div class="feature-icon">
+                        <i data-lucide="truck"></i>
+                    </div>
+                    <h3>Supply Chain Automation</h3>
+                    <p>Enable machine-to-machine contracts and automated coordination across supply chain partners.</p>
+                </div>
+                
+                <div class="card">
+                    <div class="feature-icon">
+                        <i data-lucide="building-2"></i>
+                    </div>
+                    <h3>B2B Integration</h3>
+                    <p>Replace email chaos and webhook complexity with structured, schema-validated business process automation.</p>
+                </div>
+                
+                <div class="card">
+                    <div class="feature-icon">
+                        <i data-lucide="shield"></i>
+                    </div>
+                    <h3>Financial Services</h3>
+                    <p>Secure, auditable communication for regulatory compliance and high-stakes financial automation.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="section">
+        <div class="container">
+            <div class="stats">
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-number">100%</div>
+                        <div class="stat-label">Open Source</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Central Authority</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">∞</div>
+                        <div class="stat-label">Scalable</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">1.0</div>
+                        <div class="stat-label">Protocol Version</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="section" style="background: var(--bg-secondary);">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Ready to Build the Agentic Internet?</h2>
+                <p class="section-subtitle">
+                    Join the future of autonomous system communication. Start with our open-source gateway or explore our managed platform.
+                </p>
+            </div>
+            
+            <div class="text-center">
+                <div class="hero-cta">
+                    <a href="https://github.com/amtp-protocol/" class="btn btn-primary" target="_blank">
+                        <i data-lucide="github"></i>
+                        View on GitHub
+                    </a>
+                    <a href="/contact.html" class="btn btn-secondary">
+                        <i data-lucide="mail"></i>
+                        Contact Sales
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>

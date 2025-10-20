@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if page.title and page.url != "/" %}{{ page.title }} - {{ site.title }}{% elsif page.title %}{{ page.title }}{% else %}{{ site.title }}{% endif %}</title>
+    <link rel="stylesheet" href="/assets/css/styles.css">
+    <!-- Using a specific versioned CDN for Lucide icons -->
+    <script src="https://cdn.jsdelivr.net/npm/lucide-static@0.269.0/dist/umd/lucide.min.js"></script>
+    <!-- Add Google Fonts for modern tech aesthetic -->
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Add Fira Code for code snippets -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <nav>
+                <div class="logo-container">
+                    <div class="logo">
+                        <img src="/assets/images/logo.png" alt="Agentry Logo" class="logo-icon" style="height: 32px; width: auto;">
+                        <span class="logo-text">Agentry</span>
+                    </div>
+                </div>
+                <div class="nav-links">
+                    <a href="/" {% if page.url == "/" %}class="active"{% endif %}>Home</a>
+                    <a href="/products.html" {% if page.url == "/products.html" %}class="active"{% endif %}>Products</a>
+                    <a href="/docs.html" {% if page.url == "/docs.html" %}class="active"{% endif %}>Docs</a>
+                    <a href="https://github.com/amtp-protocol/" target="_blank" class="github-link">
+                        <i data-lucide="github"></i>
+                        GitHub
+                    </a>
+                    <a href="/about.html" {% if page.url == "/about.html" %}class="active"{% endif %}>About</a>
+                    <a href="/contact.html" {% if page.url == "/contact.html" %}class="active"{% endif %}>Contact</a>
+                </div>
+                <div class="mobile-menu-toggle">
+                    <i data-lucide="menu"></i>
+                </div>
+            </nav>
+        </div>
+    </header>
+    
+    <main>
+        {{ content }}
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <img src="/assets/images/logo.png" alt="Agentry Logo" class="logo-icon" style="height: 28px; width: auto;">
+                        <span class="logo-text">Agentry</span>
+                    </div>
+                    <p>Building infrastructure for the agentic internet</p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-section">
+                        <h4>Products</h4>
+                        <a href="/products.html#gateway">Agentry Gateway</a>
+                        <a href="/products.html#cloud">Agentry Cloud</a>
+                        <a href="/products.html#enterprise">Enterprise Solutions</a>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Resources</h4>
+                        <a href="/docs.html">Documentation</a>
+                        <a href="https://github.com/amtp-protocol/" target="_blank">GitHub</a>
+                        <a href="/blog.html">Blog</a>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Company</h4>
+                        <a href="/about.html">About</a>
+                        <a href="/contact.html">Contact</a>
+                        <a href="/careers.html">Careers</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Agentry, Inc. All rights reserved.</p>
+                <div class="footer-legal">
+                    <a href="/privacy.html">Privacy</a>
+                    <a href="/terms.html">Terms</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Ensure icons render properly with fallback
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                lucide.createIcons();
+            } catch (e) {
+                console.log("Could not load Lucide icons, using fallback text");
+                document.querySelectorAll('[data-lucide]').forEach(function(el) {
+                    el.textContent = '•';
+                });
+            }
+            
+            // Mobile menu toggle
+            const mobileToggle = document.querySelector('.mobile-menu-toggle');
+            const navLinks = document.querySelector('.nav-links');
+            
+            if (mobileToggle && navLinks) {
+                mobileToggle.addEventListener('click', function() {
+                    navLinks.classList.toggle('mobile-open');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

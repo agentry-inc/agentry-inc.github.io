@@ -1,0 +1,392 @@
+---
+layout: default
+title: "Products - Agentry, Inc."
+---
+
+<main>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i data-lucide="package"></i>
+                    <span>Product Suite</span>
+                </div>
+                
+                <h1>Complete Infrastructure for Agentic Communication</h1>
+                <p class="hero-subtitle">From open-source gateway to managed cloud platform</p>
+                <p class="hero-description">
+                    Choose the right solution for your needs. Start with our open-source gateway for development and testing, 
+                    or go straight to our managed platform for production deployments.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Agentry Gateway -->
+    <section id="gateway" class="section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Agentry Gateway</h2>
+                <p class="section-subtitle">
+                    Open-source, production-grade AMTP gateway. The universal inbox for AI agents.
+                </p>
+            </div>
+            
+            <div class="card">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+                    <div class="feature-icon" style="font-size: 3rem;">
+                        <i data-lucide="server"></i>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 2rem; margin-bottom: 0.5rem;">Agentry Gateway</h3>
+                        <p style="color: var(--text-secondary); font-size: 1.125rem;">Open Source • Apache 2.0 License</p>
+                    </div>
+                </div>
+                
+                <p style="font-size: 1.125rem; margin-bottom: 2rem; line-height: 1.7;">
+                    A production-grade gateway implementing the AMTP v1.0 specification, providing secure, schema-aware messaging 
+                    between agents across domains. Deploy anywhere, scale infinitely.
+                </p>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin: 2rem 0;">
+                    <div>
+                        <h4 style="color: var(--text-primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i data-lucide="check-circle" style="color: var(--success-color);"></i>
+                            Core Features
+                        </h4>
+                        <ul class="feature-list">
+                            <li>Federated addressing (agent@domain)</li>
+                            <li>DNS-based discovery and authentication</li>
+                            <li>At-least-once delivery guarantees</li>
+                            <li>Schema validation via AGNTCY framework</li>
+                            <li>Push (webhook) and pull (inbox) delivery</li>
+                            <li>Built-in SMTP bridge for legacy systems</li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h4 style="color: var(--text-primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i data-lucide="zap" style="color: var(--accent-color);"></i>
+                            Deployment Options
+                        </h4>
+                        <ul class="feature-list">
+                            <li>Docker containers for easy deployment</li>
+                            <li>CLI tools for configuration</li>
+                            <li>REST APIs for integration</li>
+                            <li>Kubernetes Helm charts</li>
+                            <li>Cloud marketplace images</li>
+                            <li>Bare metal installation</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="code-block" style="margin: 2rem 0;">
+                    <pre><code># Quick Start with Docker
+docker run -d \
+  --name agentry-gateway \
+  -p 8080:8080 \
+  -e DOMAIN=yourcompany.com \
+  agentry/gateway:latest
+
+# Configure your first agent
+curl -X POST http://localhost:8080/api/agents \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "workflow-bot",
+    "domain": "yourcompany.com",
+    "webhook": "https://your-app.com/webhook"
+  }'</code></pre>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 2rem;">
+                    <a href="https://github.com/amtp-protocol/agentry" class="btn btn-primary" target="_blank">
+                        <i data-lucide="github"></i>
+                        View on GitHub
+                    </a>
+                    <a href="/docs.html" class="btn btn-secondary">
+                        <i data-lucide="book-open"></i>
+                        Documentation
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Agentry Cloud -->
+    <section id="cloud" class="section" style="background: var(--bg-secondary);">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Agentry Cloud</h2>
+                <p class="section-subtitle">
+                    Fully managed, multi-tenant AMTP gateway platform. Federated communication, delivered as a service.
+                </p>
+            </div>
+            
+            <div class="card">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+                    <div class="feature-icon" style="font-size: 3rem;">
+                        <i data-lucide="cloud"></i>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 2rem; margin-bottom: 0.5rem;">Agentry Cloud</h3>
+                        <p style="color: var(--text-secondary); font-size: 1.125rem;">Managed Platform • SaaS</p>
+                    </div>
+                </div>
+                
+                <p style="font-size: 1.125rem; margin-bottom: 2rem; line-height: 1.7;">
+                    A fully managed, multi-tenant AMTP gateway platform with integrated DNS onboarding, storage scaling, 
+                    and SLA-backed message reliability. Focus on building agents, not infrastructure.
+                </p>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin: 2rem 0;">
+                    <div>
+                        <h4 style="color: var(--text-primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i data-lucide="settings" style="color: var(--primary-color);"></i>
+                            Managed Features
+                        </h4>
+                        <ul class="feature-list">
+                            <li>Automatic DNS & TLS provisioning</li>
+                            <li>Isolated per-tenant routing</li>
+                            <li>Message retention & audit logs</li>
+                            <li>Real-time metrics & dashboards</li>
+                            <li>Multi-cloud redundancy</li>
+                            <li>Compliance (SOC2, GDPR-ready)</li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h4 style="color: var(--text-primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i data-lucide="trending-up" style="color: var(--success-color);"></i>
+                            Scaling & Performance
+                        </h4>
+                        <ul class="feature-list">
+                            <li>Auto-scaling based on load</li>
+                            <li>Global edge locations</li>
+                            <li>99.9% uptime SLA</li>
+                            <li>WebAssembly sandbox support</li>
+                            <li>Custom schema registry</li>
+                            <li>Dedicated instance options</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); padding: 1.5rem; margin: 2rem 0;">
+                    <h4 style="color: var(--text-primary); margin-bottom: 1rem;">Pricing Model</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                        <div>
+                            <strong>Per Domain</strong><br>
+                            <span style="color: var(--text-secondary);">$99/month</span>
+                        </div>
+                        <div>
+                            <strong>Message Storage</strong><br>
+                            <span style="color: var(--text-secondary);">$0.10/GB/month</span>
+                        </div>
+                        <div>
+                            <strong>Bandwidth</strong><br>
+                            <span style="color: var(--text-secondary);">$0.05/GB</span>
+                        </div>
+                        <div>
+                            <strong>Dedicated Instance</strong><br>
+                            <span style="color: var(--text-secondary);">$999/month</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 2rem;">
+                    <a href="/contact.html" class="btn btn-primary">
+                        <i data-lucide="mail"></i>
+                        Start Free Trial
+                    </a>
+                    <a href="/docs.html#cloud" class="btn btn-secondary">
+                        <i data-lucide="book-open"></i>
+                        Cloud Documentation
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Enterprise Solutions -->
+    <section id="enterprise" class="section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Enterprise Solutions</h2>
+                <p class="section-subtitle">
+                    Tailored AMTP implementations for regulated and mission-critical environments.
+                </p>
+            </div>
+            
+            <div class="card">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+                    <div class="feature-icon" style="font-size: 3rem;">
+                        <i data-lucide="building"></i>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 2rem; margin-bottom: 0.5rem;">Enterprise AMTP Solutions</h3>
+                        <p style="color: var(--text-secondary); font-size: 1.125rem;">Custom Deployments • Professional Services</p>
+                    </div>
+                </div>
+                
+                <p style="font-size: 1.125rem; margin-bottom: 2rem; line-height: 1.7;">
+                    Enterprise integration services and dedicated deployments for organizations requiring full control, 
+                    custom workflows, or air-gapped environments. Future versions will include WebAssembly extensions 
+                    for embedded business logic.
+                </p>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin: 2rem 0;">
+                    <div>
+                        <h4 style="color: var(--text-primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i data-lucide="shield" style="color: var(--error-color);"></i>
+                            Security & Compliance
+                        </h4>
+                        <ul class="feature-list">
+                            <li>Air-gapped deployments</li>
+                            <li>Custom security policies</li>
+                            <li>Compliance audits (SOC2, HIPAA)</li>
+                            <li>Encryption key management</li>
+                            <li>Audit trail requirements</li>
+                            <li>Data residency controls</li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h4 style="color: var(--text-primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i data-lucide="cog" style="color: var(--accent-color);"></i>
+                            Custom Integration
+                        </h4>
+                        <ul class="feature-list">
+                            <li>Custom workflow development</li>
+                            <li>Legacy system integration</li>
+                            <li>WebAssembly extensions</li>
+                            <li>Dedicated support team</li>
+                            <li>Training & consulting</li>
+                            <li>24/7 monitoring</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); padding: 1.5rem; margin: 2rem 0;">
+                    <h4 style="color: var(--text-primary); margin-bottom: 1rem;">Target Industries</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <i data-lucide="banknote" style="color: var(--success-color);"></i>
+                            <span>Financial Services</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <i data-lucide="truck" style="color: var(--accent-color);"></i>
+                            <span>Logistics & Supply Chain</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <i data-lucide="heart" style="color: var(--error-color);"></i>
+                            <span>Healthcare</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <i data-lucide="factory" style="color: var(--text-secondary);"></i>
+                            <span>Manufacturing</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 2rem;">
+                    <a href="/contact.html" class="btn btn-primary">
+                        <i data-lucide="phone"></i>
+                        Contact Sales
+                    </a>
+                    <a href="/docs.html#enterprise" class="btn btn-secondary">
+                        <i data-lucide="file-text"></i>
+                        Enterprise Guide
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comparison Table -->
+    <section class="section" style="background: var(--bg-secondary);">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Choose Your Solution</h2>
+                <p class="section-subtitle">
+                    Compare our products to find the right fit for your needs.
+                </p>
+            </div>
+            
+            <div style="overflow-x: auto; margin: 2rem 0;">
+                <table style="width: 100%; border-collapse: collapse; background: var(--bg-card); border-radius: var(--border-radius-lg); overflow: hidden;">
+                    <thead>
+                        <tr style="background: var(--bg-primary);">
+                            <th style="padding: 1rem; text-align: left; color: var(--text-primary); font-weight: 600;">Feature</th>
+                            <th style="padding: 1rem; text-align: center; color: var(--text-primary); font-weight: 600;">Gateway</th>
+                            <th style="padding: 1rem; text-align: center; color: var(--text-primary); font-weight: 600;">Cloud</th>
+                            <th style="padding: 1rem; text-align: center; color: var(--text-primary); font-weight: 600;">Enterprise</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="border-top: 1px solid var(--border-color);">
+                            <td style="padding: 1rem; color: var(--text-primary); font-weight: 500;">AMTP Protocol Support</td>
+                            <td style="padding: 1rem; text-align: center; color: var(--success-color);"><i data-lucide="check"></i></td>
+                            <td style="padding: 1rem; text-align: center; color: var(--success-color);"><i data-lucide="check"></i></td>
+                            <td style="padding: 1rem; text-align: center; color: var(--success-color);"><i data-lucide="check"></i></td>
+                        </tr>
+                        <tr style="border-top: 1px solid var(--border-color);">
+                            <td style="padding: 1rem; color: var(--text-primary); font-weight: 500;">Self-Hosted</td>
+                            <td style="padding: 1rem; text-align: center; color: var(--success-color);"><i data-lucide="check"></i></td>
+                            <td style="padding: 1rem; text-align: center; color: var(--text-muted);">-</td>
+                            <td style="padding: 1rem; text-align: center; color: var(--success-color);"><i data-lucide="check"></i></td>
+                        </tr>
+                        <tr style="border-top: 1px solid var(--border-color);">
+                            <td style="padding: 1rem; color: var(--text-primary); font-weight: 500;">Managed Infrastructure</td>
+                            <td style="padding: 1rem; text-align: center; color: var(--text-muted);">-</td>
+                            <td style="padding: 1rem; text-align: center; color: var(--success-color);"><i data-lucide="check"></i></td>
+                            <td style="padding: 1rem; text-align: center; color: var(--success-color);"><i data-lucide="check"></i></td>
+                        </tr>
+                        <tr style="border-top: 1px solid var(--border-color);">
+                            <td style="padding: 1rem; color: var(--text-primary); font-weight: 500;">SLA Guarantees</td>
+                            <td style="padding: 1rem; text-align: center; color: var(--text-muted);">-</td>
+                            <td style="padding: 1rem; text-align: center; color: var(--success-color);"><i data-lucide="check"></i></td>
+                            <td style="padding: 1rem; text-align: center; color: var(--success-color);"><i data-lucide="check"></i></td>
+                        </tr>
+                        <tr style="border-top: 1px solid var(--border-color);">
+                            <td style="padding: 1rem; color: var(--text-primary); font-weight: 500;">Custom Integration</td>
+                            <td style="padding: 1rem; text-align: center; color: var(--text-muted);">-</td>
+                            <td style="padding: 1rem; text-align: center; color: var(--text-muted);">-</td>
+                            <td style="padding: 1rem; text-align: center; color: var(--success-color);"><i data-lucide="check"></i></td>
+                        </tr>
+                        <tr style="border-top: 1px solid var(--border-color);">
+                            <td style="padding: 1rem; color: var(--text-primary); font-weight: 500;">Air-Gapped Deployments</td>
+                            <td style="padding: 1rem; text-align: center; color: var(--text-muted);">-</td>
+                            <td style="padding: 1rem; text-align: center; color: var(--text-muted);">-</td>
+                            <td style="padding: 1rem; text-align: center; color: var(--success-color);"><i data-lucide="check"></i></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Ready to Get Started?</h2>
+                <p class="section-subtitle">
+                    Choose your path to the agentic internet. Start building today.
+                </p>
+            </div>
+            
+            <div class="text-center">
+                <div class="hero-cta">
+                    <a href="https://github.com/amtp-protocol/agentry" class="btn btn-primary" target="_blank">
+                        <i data-lucide="github"></i>
+                        Try Gateway
+                    </a>
+                    <a href="/contact.html" class="btn btn-secondary">
+                        <i data-lucide="mail"></i>
+                        Contact Sales
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>

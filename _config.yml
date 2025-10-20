@@ -1,0 +1,25 @@
+title: Agentry, Inc.
+email: saul.liu@agentry.site
+description: >-
+  Building infrastructure for the agentic internet with AMTP protocol and Agentry gateway.
+baseurl: ""
+url: "https://agentry.site" # Set to your custom domain
+
+# Build settings
+markdown: kramdown
+encoding: utf-8
+permalink: /:title.html
+plugins:
+  - jekyll-feed
+
+# Custom domain
+github_pages:
+  cname: agentry.site
+
+# Exclude unnecessary files
+exclude:
+  - README.md
+  - Gemfile
+  - Gemfile.lock
+  - vendor/
+  - .force-deploy
