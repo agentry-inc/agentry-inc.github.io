@@ -8,10 +8,10 @@ title: "Agentry, Inc. - Building Infrastructure for the Agentic Internet"
     <section class="hero">
         <div class="container">
             <div class="hero-content">
-                <div class="hero-badge">
-                    <i data-lucide="zap"></i>
-                    <span>AMTP Protocol v1.0</span>
-                </div>
+                <a href="#orchestration" class="hero-badge" style="text-decoration: none;">
+                    <i data-lucide="sparkles"></i>
+                    <span>New: Dynamic Workflow Orchestration</span>
+                </a>
                 
                 <h1>Infrastructure for the Agentic Internet</h1>
                 <p class="hero-subtitle">Enabling autonomous systems to communicate securely and reliably across boundaries</p>
@@ -46,6 +46,64 @@ title: "Agentry, Inc. - Building Infrastructure for the Agentic Internet"
     "data": { "orderId": "ORD-001" }
   },
   "signature": "sha256:abc123..."
+}</code></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Dynamic Workflow Orchestration -->
+    <section id="orchestration" class="section" style="background: var(--bg-secondary);">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Dynamic Workflow Orchestration</h2>
+                <p class="section-subtitle">
+                    Your AI planner writes the workflow at runtime. Agentry runs it, across agents, frameworks, and organizations.
+                </p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; align-items: start;">
+                <div>
+                    <p style="font-size: 1.125rem; line-height: 1.7; margin-bottom: 1.5rem; color: var(--text-secondary);">
+                        Static DAG engines need the graph compiled ahead of time. Agent frameworks stop at the edge of one app.
+                        With Agentry, a workflow is just a <strong>coordination block on an ordinary message</strong>: the planner
+                        emits JSON, sends one request, and the gateway handles fan out, ordering, branching, timeouts, and results.
+                    </p>
+                    <ul class="feature-list">
+                        <li><strong>Parallel:</strong> fan out to many agents, finish when every required reply is in</li>
+                        <li><strong>Sequential:</strong> one agent at a time, the next step dispatched on each reply</li>
+                        <li><strong>Conditional:</strong> branch on an agent's reply, the other path is marked skipped</li>
+                        <li>Timeouts, stop on failure, and idempotent step dispatch built in</li>
+                        <li>Only authenticated participants can advance a workflow</li>
+                        <li>Works with LangGraph, CrewAI, or plain code, inside or across organizations</li>
+                    </ul>
+                    <div class="hero-cta" style="justify-content: flex-start; margin: 2rem 0 0;">
+                        <a href="/products.html#orchestration" class="btn btn-primary">
+                            <i data-lucide="workflow"></i>
+                            Explore Orchestration
+                        </a>
+                        <a href="https://github.com/amtp-protocol/agentry" class="btn btn-secondary" target="_blank">
+                            <i data-lucide="github"></i>
+                            Try It on GitHub
+                        </a>
+                    </div>
+                </div>
+
+                <div class="code-block" style="margin: 0;">
+                    <pre><code>// One POST /v1/messages runs the whole step
+{
+  "sender": "planner@acme.com",
+  "recipients": ["market@acme.com", "legal@acme.com",
+                 "competitor@partner.io"],
+  "subject": "EU market entry research",
+  "coordination": {
+    "type": "parallel",
+    "timeout": 600,
+    "required_responses": ["market@acme.com",
+      "legal@acme.com", "competitor@partner.io"],
+    "stop_on_failure": true
+  },
+  "payload": { "question": "Should we enter the EU market?" }
 }</code></pre>
                 </div>
             </div>
@@ -93,7 +151,7 @@ title: "Agentry, Inc. - Building Infrastructure for the Agentic Internet"
                         <i data-lucide="workflow"></i>
                     </div>
                     <h3>Workflow Coordination</h3>
-                    <p>Native support for multi-agent workflows, coordination patterns, and complex business process automation.</p>
+                    <p>Dynamic orchestration of AI-generated workflows: parallel, sequential, and conditional steps with timeouts and failure handling, run by the gateway.</p>
                 </div>
             </div>
         </div>
@@ -118,6 +176,7 @@ title: "Agentry, Inc. - Building Infrastructure for the Agentic Internet"
                     <p><strong>Open Source</strong> - Production-grade AMTP gateway with federated addressing, DNS discovery, and multi-agent coordination.</p>
                     <ul class="feature-list" style="margin-top: 1rem;">
                         <li>Federated addressing (agent@domain)</li>
+                        <li>Dynamic workflow orchestration</li>
                         <li>Push and pull delivery models</li>
                         <li>Built-in SMTP bridge</li>
                         <li>Docker & CLI deployment</li>
