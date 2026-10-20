@@ -8,9 +8,10 @@ url: "https://agentry.site" # Set to your custom domain
 # Build settings
 markdown: kramdown
 encoding: utf-8
-permalink: /:title.html
 plugins:
   - jekyll-feed
+  - jekyll-seo-tag
+  - jekyll-sitemap
 
 # Custom domain
 github_pages:
