@@ -1,0 +1,360 @@
+---
+layout: default
+title: "Dynamic Multi-Agent Workflow Orchestration"
+description: "Run AI-generated multi-agent workflows with Agentry: parallel, sequential, and conditional steps with timeouts, retries, and signatures, across any framework."
+---
+
+<main>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i data-lucide="sparkles"></i>
+                    <span>New in Agentry Gateway</span>
+                </div>
+
+                <h1>Dynamic Multi-Agent Workflow Orchestration</h1>
+                <p class="hero-subtitle">Your AI planner writes the workflow at runtime. Agentry runs it.</p>
+                <p class="hero-description">
+                    Agentry executes multi-agent workflows that exist only as data: parallel fan out, sequential handoffs,
+                    and conditional branches, with timeouts, failure handling, and signed replies, across frameworks and organizations.
+                </p>
+
+                <div class="hero-cta">
+                    <a href="https://github.com/amtp-protocol/agentry" class="btn btn-primary" target="_blank">
+                        <i data-lucide="github"></i>
+                        Get Agentry Gateway
+                    </a>
+                    <a href="/docs.html" class="btn btn-secondary">
+                        <i data-lucide="book-open"></i>
+                        Quick Start
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- The Problem -->
+    <section class="section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Why Static DAGs Fall Short</h2>
+                <p class="section-subtitle">
+                    An LLM planner can emit a plan like "research in parallel, then synthesize if confident, otherwise ask a human".
+                    Something has to run that plan, and every existing layer stops short.
+                </p>
+            </div>
+
+            <div class="table-wrap">
+                <table class="compare-table">
+                    <thead>
+                        <tr><th>Tool</th><th>Orchestrates</th><th>Why it does not run an AI-generated plan</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Kubernetes</td><td>Containers</td><td>No notion of a step, a reply, or a dependency</td></tr>
+                        <tr><td>Kubeflow, Argo</td><td>Static DAGs</td><td>The DAG is compiled ahead of time, but this plan exists only at runtime</td></tr>
+                        <tr><td>LangGraph, CrewAI</td><td>Graphs inside one app</td><td>One ecosystem, context wired by hand, stops at your organization's boundary</td></tr>
+                        <tr><td>A2A</td><td>Agent to agent wire</td><td>Defines how agents talk, not how work executes</td></tr>
+                        <tr><td>MCP</td><td>Agent to tool</td><td>Not agent to agent at all</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- Primitives -->
+    <section class="section" style="background: var(--bg-secondary);">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">The Workflow Is Data on a Message</h2>
+                <p class="section-subtitle">
+                    Add a coordination block to any AMTP message. The planner emits JSON, and the gateway executes it.
+                </p>
+            </div>
+
+            <div class="card-grid">
+                <div class="card">
+                    <div class="feature-icon">
+                        <i data-lucide="git-fork"></i>
+                    </div>
+                    <h3>Parallel</h3>
+                    <p>Fan out to every participant at once. The workflow completes when all <strong>required_responses</strong> have answered.</p>
+                </div>
+
+                <div class="card">
+                    <div class="feature-icon">
+                        <i data-lucide="list-ordered"></i>
+                    </div>
+                    <h3>Sequential</h3>
+                    <p>One agent at a time, in the order given by <strong>sequence</strong>. Each reply triggers dispatch of the next step.</p>
+                </div>
+
+                <div class="card">
+                    <div class="feature-icon">
+                        <i data-lucide="split"></i>
+                    </div>
+                    <h3>Conditional</h3>
+                    <p>Evaluate the first reply against <strong>conditions</strong> and dispatch only the matching branch.</p>
+                </div>
+            </div>
+
+            <p style="text-align: center; margin-top: 2rem; color: var(--text-secondary);">
+                All three take a <strong>timeout</strong> in seconds and an optional <strong>stop_on_failure</strong>.
+            </p>
+
+            <div class="code-block" style="margin-top: 2rem;">
+                <pre><code>POST /v1/messages
+{
+  "sender": "planner@acme.com",
+  "recipients": ["market@acme.com", "legal@acme.com", "competitor@partner.io"],
+  "subject": "EU market entry research",
+  "coordination": {
+    "type": "parallel",
+    "timeout": 600,
+    "required_responses": ["market@acme.com", "legal@acme.com", "competitor@partner.io"],
+    "stop_on_failure": true
+  },
+  "payload": { "question": "Should we enter the EU market?" }
+}</code></pre>
+            </div>
+            <p style="color: var(--text-secondary);">
+                One request. The response carries a <strong>workflow_id</strong>, and the planner is done until results come back.
+                Participants can live behind other organizations' gateways, like competitor@partner.io here.
+            </p>
+        </div>
+    </section>
+
+    <!-- Lifecycle -->
+    <section class="section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">How a Workflow Runs</h2>
+                <p class="section-subtitle">
+                    Workflow state lives in the gateway, not in the planner's context window.
+                </p>
+            </div>
+
+            <div class="card">
+                <ol class="steps">
+                    <li><strong>Initialize.</strong> The gateway assigns a workflow_id, records the participants and the deadline, and persists them.</li>
+                    <li><strong>Dispatch.</strong> Each step is delivered to its agent by push (webhook) or pull (inbox), locally or across domains via DNS discovery.</li>
+                    <li><span><strong>Reply.</strong> The agent answers with the workflow_id and <strong>response_type: workflow_response</strong>, or <strong>workflow_error</strong> to fail its step.</span></li>
+                    <li><strong>Advance.</strong> The gateway checks that the sender is authenticated and still pending, updates state with an optimistic version check, then dispatches the next step, takes a branch, or finishes.</li>
+                    <li><strong>Report.</strong> workflow@your-domain sends the planner one message with every participant's status and payload.</li>
+                </ol>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 2rem;">
+                <div>
+                    <h3 style="margin-bottom: 1rem; color: var(--text-primary);">An agent's reply</h3>
+                    <div class="code-block" style="margin: 0;">
+                        <pre><code># Agentry pushes each step to your webhook
+@app.post("/webhook")
+def on_message(msg: dict):
+    result = research_graph.invoke(msg["payload"])
+    requests.post(f"{GATEWAY}/v1/messages",
+        headers={"Authorization": f"Bearer {API_KEY}"},
+        json={
+            "sender": "market@acme.com",
+            "recipients": [msg["sender"]],
+            "workflow_id": msg["workflow_id"],
+            "response_type": "workflow_response",
+            "payload": result,
+        })</code></pre>
+                    </div>
+                    <p style="margin-top: 1rem; color: var(--text-secondary);">
+                        Plain HTTP, so any language or framework works. A Python SDK is available: <strong>pip install amtp</strong>.
+                    </p>
+                </div>
+
+                <div>
+                    <h3 style="margin-bottom: 1rem; color: var(--text-primary);">The planner's result</h3>
+                    <div class="code-block" style="margin: 0;">
+                        <pre><code>{
+  "workflow_id": "0199...",
+  "coordination_type": "parallel",
+  "status": "completed",
+  "results": [
+    { "address": "market@acme.com",
+      "status": "completed", "payload": { } },
+    { "address": "legal@acme.com",
+      "status": "completed", "payload": { } },
+    { "address": "competitor@partner.io",
+      "status": "completed", "payload": { } }
+  ]
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Conditionals -->
+    <section class="section" style="background: var(--bg-secondary);">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Conditional Branching</h2>
+                <p class="section-subtitle">
+                    Let an agent's answer decide what happens next, such as synthesis when a critic is confident and human review when it is not.
+                </p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; align-items: start;">
+                <div class="code-block" style="margin: 0;">
+                    <pre><code>{
+  "sender": "planner@acme.com",
+  "recipients": ["critic@acme.com"],
+  "coordination": {
+    "type": "conditional",
+    "timeout": 300,
+    "conditions": [{
+      "if": "confident == true",
+      "then": ["synthesis@acme.com"],
+      "else": ["human-review@acme.com"]
+    }]
+  },
+  "payload": { "draft": "..." }
+}</code></pre>
+                </div>
+
+                <ul class="feature-list">
+                    <li><span>critic@acme.com replies, and the gateway evaluates the <strong>if</strong> expression against its payload</span></li>
+                    <li>Only the matching branch is dispatched</li>
+                    <li><span>Conditions support <strong>key == value</strong> on the reply payload today</span></li>
+                    <li>Numeric comparisons, such as confidence &gt; 0.8, are coming next</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Failure handling -->
+    <section class="section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Built for Failure</h2>
+                <p class="section-subtitle">
+                    Multi-agent workflows run for minutes or hours, cross networks, and depend on agents you do not control.
+                </p>
+            </div>
+
+            <div class="table-wrap">
+                <table class="compare-table">
+                    <thead>
+                        <tr><th>What goes wrong</th><th>What Agentry does</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>An agent never answers</td><td>A deadline sweeper marks the workflow and pending steps as timed out and notifies the sender</td></tr>
+                        <tr><td>An agent fails</td><td>A workflow_error reply fails the step, and stop_on_failure ends the workflow early</td></tr>
+                        <tr><td>A step is dispatched twice</td><td>Each step has a deterministic idempotency key, so receivers drop the duplicate</td></tr>
+                        <tr><td>Two replicas process replies at the same instant</td><td>An optimistic version check on shared PostgreSQL state, and the loser retries</td></tr>
+                        <tr><td>A duplicate or forged reply arrives</td><td>Ignored: the participant is no longer pending, or the sender is not authenticated</td></tr>
+                        <tr><td>The network blips</td><td>Per-message retries with exponential backoff and jitter</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- Where it fits -->
+    <section class="section" style="background: var(--bg-secondary);">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">How Agentry Fits with MCP and A2A</h2>
+                <p class="section-subtitle">
+                    Complementary, not competing: keep your agents and tools, and add the layer that runs the plan.
+                </p>
+            </div>
+
+            <div class="table-wrap">
+                <table class="compare-table">
+                    <thead>
+                        <tr><th>Layer</th><th>Question it answers</th><th>Example</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>MCP</td><td>How does an agent call a tool?</td><td>Search, database, code runner</td></tr>
+                        <tr><td>Framework</td><td>How is one agent built?</td><td>LangGraph, CrewAI, your own loop</td></tr>
+                        <tr><td>A2A</td><td>How do two agents talk?</td><td>Agent cards, tasks, streaming</td></tr>
+                        <tr class="highlight"><td>Agentry and AMTP</td><td>How does a multi-agent plan execute, across organizations?</td><td>Addressing, durable delivery, workflow state, signatures</td></tr>
+                        <tr><td>Kubernetes</td><td>Where do the processes run?</td><td>Pods, scaling, restarts</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 3rem;">
+                <div class="card">
+                    <h3>Use an orchestration engine when</h3>
+                    <ul class="feature-list">
+                        <li>Plans are generated at runtime, not drawn as graphs in code</li>
+                        <li>Agents span frameworks, teams, or organizations</li>
+                        <li>Steps outlive a process: minutes to hours, humans in the loop</li>
+                        <li>You need timeouts, retries, and an audit trail of who said what</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>Stay with your framework when</h3>
+                    <ul class="feature-list">
+                        <li>One team, one framework, one process</li>
+                        <li>Sub-second tool loops where a network hop is too expensive</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Today and next -->
+    <section class="section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Available Today and Coming Next</h2>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                <div class="card">
+                    <h3 style="color: var(--primary-color);">Works today</h3>
+                    <ul class="feature-list">
+                        <li>Parallel, sequential, and conditional workflows</li>
+                        <li>Timeouts, stop on failure, idempotent steps</li>
+                        <li>Conditions with key == value</li>
+                        <li>Aggregated results returned to the sender</li>
+                        <li>Domain signatures and DNS discovery across organizations</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3 style="color: var(--accent-color);">Coming next</h3>
+                    <ul class="feature-list">
+                        <li>Context shared automatically between agents in a workflow</li>
+                        <li>Token-aware selection and summarization of forwarded context</li>
+                        <li>Composite plans, such as parallel then conditional, as one workflow</li>
+                        <li>Numeric conditions</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="section" style="background: var(--bg-secondary);">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Run Your First Workflow</h2>
+                <p class="section-subtitle">
+                    Agentry Gateway is open source under Apache 2.0. Deploy it in minutes, or talk to us about Agentry Cloud.
+                </p>
+            </div>
+
+            <div class="text-center">
+                <div class="hero-cta" style="margin-bottom: 0;">
+                    <a href="https://github.com/amtp-protocol/agentry" class="btn btn-primary" target="_blank">
+                        <i data-lucide="github"></i>
+                        View on GitHub
+                    </a>
+                    <a href="/contact.html" class="btn btn-secondary">
+                        <i data-lucide="mail"></i>
+                        Contact Us
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>

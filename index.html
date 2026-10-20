@@ -1,6 +1,7 @@
 ---
 layout: default
-title: "Infrastructure for the Agentic Internet"
+title: "Multi-Agent Workflow Orchestration Gateway"
+description: "Agentry runs AI-generated multi-agent workflows across frameworks and organizations. Open-source AMTP gateway with parallel, sequential, and conditional steps."
 ---
 
 <main>
@@ -33,20 +34,19 @@ title: "Infrastructure for the Agentic Internet"
                 
                 <!-- Protocol Code Example -->
                 <div class="code-block">
-                    <pre><code>// AMTP Message Example
+                    <pre><code>// POST /v1/messages
 {
-  "version": "1.0",
-  "from": "agent@company.com",
-  "to": "workflow@partner.com",
-  "messageId": "msg_123456789",
-  "timestamp": "2025-01-27T10:30:00Z",
-  "schema": "https://schemas.agentry.site/workflow/v1",
+  "sender": "orders@company.com",
+  "recipients": ["fulfillment@partner.com"],
+  "subject": "New order",
+  "schema": "agntcy:commerce.order.v1",
   "payload": {
     "action": "process_order",
-    "data": { "orderId": "ORD-001" }
-  },
-  "signature": "sha256:abc123..."
-}</code></pre>
+    "data": { "order_id": "ORD-001" }
+  }
+}
+// Your gateway fills in message_id and timestamp,
+// signs with your domain key, and routes via DNS</code></pre>
                 </div>
             </div>
         </div>
@@ -72,15 +72,15 @@ title: "Infrastructure for the Agentic Internet"
                     <ul class="feature-list">
                         <li><strong>Parallel:</strong> fan out to many agents, finish when every required reply is in</li>
                         <li><strong>Sequential:</strong> one agent at a time, the next step dispatched on each reply</li>
-                        <li><strong>Conditional:</strong> branch on an agent's reply, the other path is marked skipped</li>
+                        <li><strong>Conditional:</strong> branch on an agent's reply, only the matching path runs</li>
                         <li>Timeouts, stop on failure, and idempotent step dispatch built in</li>
                         <li>Only authenticated participants can advance a workflow</li>
                         <li>Works with LangGraph, CrewAI, or plain code, inside or across organizations</li>
                     </ul>
                     <div class="hero-cta" style="justify-content: flex-start; margin: 2rem 0 0;">
-                        <a href="/products.html#gateway" class="btn btn-primary">
+                        <a href="/docs/workflow-orchestration.html" class="btn btn-primary">
                             <i data-lucide="workflow"></i>
-                            Explore Agentry Gateway
+                            How Orchestration Works
                         </a>
                         <a href="https://github.com/amtp-protocol/agentry" class="btn btn-secondary" target="_blank">
                             <i data-lucide="github"></i>
@@ -178,7 +178,6 @@ title: "Infrastructure for the Agentic Internet"
                         <li>Federated addressing (agent@domain)</li>
                         <li>Dynamic workflow orchestration</li>
                         <li>Push and pull delivery models</li>
-                        <li>Built-in SMTP bridge</li>
                         <li>Docker & CLI deployment</li>
                     </ul>
                     <a href="/products.html#gateway" class="btn btn-secondary" style="margin-top: 1rem;">

@@ -1,6 +1,7 @@
 ---
 layout: default
-title: "Documentation"
+title: "AMTP and Agentry Gateway Documentation"
+description: "Deploy Agentry Gateway with Docker, register agents, send AMTP messages, and run parallel, sequential, and conditional multi-agent workflows in minutes."
 ---
 
 <main>
@@ -36,19 +37,31 @@ title: "Documentation"
             <div class="card">
                 <h3 style="margin-bottom: 1.5rem; color: var(--text-primary);">Deploy Agentry Gateway with Docker</h3>
                 <div class="code-block">
-                    <pre><code># Pull the latest image
-docker pull agentry/gateway:latest
+                    <pre><code># Build the image
+git clone https://github.com/amtp-protocol/agentry.git && cd agentry
+make docker-build
 
-# Run with basic configuration
-docker run -d \
-  --name agentry-gateway \
-  -p 8080:8080 \
-  -e DOMAIN=yourcompany.com \
-  -e ADMIN_EMAIL=admin@yourcompany.com \
-  agentry/gateway:latest
+# Create an admin key and run the gateway
+mkdir -p keys && openssl rand -hex 32 > keys/admin.keys
+docker run -d --name agentry -p 8443:8443 \
+  -e AMTP_DOMAIN=yourcompany.com \
+  -e AMTP_TLS_ENABLED=false \
+  -e AMTP_ADMIN_KEY_FILE=/app/keys/admin.keys \
+  -v $(pwd)/keys:/app/keys:ro \
+  agentry:latest
 
 # Check status
-curl http://localhost:8080/health</code></pre>
+curl http://localhost:8443/health
+
+# Register a pull-mode agent (the response contains its api_key)
+curl -X POST http://localhost:8443/v1/admin/agents \
+  -H "Content-Type: application/json" \
+  -H "X-Admin-Key: $(cat keys/admin.keys)" \
+  -d '{"address": "assistant", "delivery_mode": "pull"}'
+
+# Read its inbox
+curl -H "Authorization: Bearer &lt;api_key&gt;" \
+  http://localhost:8443/v1/inbox/assistant@yourcompany.com</code></pre>
                 </div>
                 
                 <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 2rem;">
@@ -122,7 +135,7 @@ curl http://localhost:8080/health</code></pre>
                         <li>Authentication methods</li>
                         <li>Error handling</li>
                     </ul>
-                    <a href="#api-reference" class="btn btn-secondary" style="margin-top: 1rem;">
+                    <a href="https://github.com/amtp-protocol/agentry/blob/main/docs/API.md" class="btn btn-secondary" target="_blank" style="margin-top: 1rem;">
                         API Docs
                     </a>
                 </div>
@@ -139,7 +152,7 @@ curl http://localhost:8080/health</code></pre>
                         <li>Custom schemas</li>
                         <li>Schema evolution</li>
                     </ul>
-                    <a href="#schema-registry" class="btn btn-secondary" style="margin-top: 1rem;">
+                    <a href="https://github.com/amtp-protocol/agentry/blob/main/docs/SCHEMA.md" target="_blank" class="btn btn-secondary" style="margin-top: 1rem;">
                         Schema Guide
                     </a>
                 </div>
@@ -156,7 +169,7 @@ curl http://localhost:8080/health</code></pre>
                         <li>Network security</li>
                         <li>Access control</li>
                     </ul>
-                    <a href="#security-guide" class="btn btn-secondary" style="margin-top: 1rem;">
+                    <a href="https://github.com/amtp-protocol/agentry/blob/main/docs/API.md#security" target="_blank" class="btn btn-secondary" style="margin-top: 1rem;">
                         Security Guide
                     </a>
                 </div>
@@ -165,16 +178,16 @@ curl http://localhost:8080/health</code></pre>
                     <div class="feature-icon">
                         <i data-lucide="workflow"></i>
                     </div>
-                    <h3>Integration Examples</h3>
-                    <p>Real-world examples and tutorials for integrating AMTP into your applications.</p>
+                    <h3>Workflow Orchestration</h3>
+                    <p>Run AI-generated multi-agent workflows across frameworks and organizations.</p>
                     <ul class="feature-list">
-                        <li>LangChain integration</li>
-                        <li>CrewAI workflows</li>
-                        <li>Custom agent development</li>
-                        <li>Legacy system bridges</li>
+                        <li>Parallel, sequential, conditional</li>
+                        <li>Agent replies and results</li>
+                        <li>Timeouts and failure handling</li>
+                        <li>LangGraph, CrewAI, plain code</li>
                     </ul>
-                    <a href="#integration-examples" class="btn btn-secondary" style="margin-top: 1rem;">
-                        View Examples
+                    <a href="/docs/workflow-orchestration.html" class="btn btn-secondary" style="margin-top: 1rem;">
+                        Orchestration Guide
                     </a>
                 </div>
             </div>
@@ -199,54 +212,44 @@ curl http://localhost:8080/health</code></pre>
                 </p>
                 
                 <div class="code-block">
-                    <pre><code>{
-  "version": "1.0",
-  "messageId": "msg_123456789",
-  "timestamp": "2025-01-27T10:30:00Z",
-  "from": "agent@company.com",
-  "to": "workflow@partner.com",
-  "replyTo": "notifications@company.com",
-  "priority": "normal",
-  "ttl": 3600,
-  "schema": "https://schemas.agentry.site/workflow/v1",
+                    <pre><code>POST /v1/messages
+Authorization: Bearer &lt;sender agent api_key&gt;
+
+{
+  "sender": "orders@company.com",
+  "recipients": ["fulfillment@partner.com"],
+  "subject": "New order",
+  "schema": "agntcy:commerce.order.v1",
+  "headers": { "priority": "high" },
   "payload": {
     "action": "process_order",
-    "data": {
-      "orderId": "ORD-001",
-      "amount": 99.99,
-      "currency": "USD"
-    }
-  },
-  "metadata": {
-    "correlationId": "corr_abc123",
-    "tags": ["urgent", "billing"]
-  },
-  "signature": {
-    "algorithm": "RS256",
-    "keyId": "key_123",
-    "value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
+    "data": { "order_id": "ORD-001", "amount": 99.99, "currency": "USD" }
   }
 }</code></pre>
                 </div>
-                
+
                 <h4 style="margin: 2rem 0 1rem; color: var(--text-primary);">Required Fields</h4>
                 <ul class="feature-list">
-                    <li><strong>version</strong> - AMTP protocol version (currently "1.0")</li>
-                    <li><strong>messageId</strong> - Unique identifier for the message</li>
-                    <li><strong>timestamp</strong> - ISO 8601 timestamp of message creation</li>
-                    <li><strong>from</strong> - Sender address in format agent@domain</li>
-                    <li><strong>to</strong> - Recipient address in format agent@domain</li>
-                    <li><strong>payload</strong> - The actual message content</li>
+                    <li><strong>sender</strong> - Sender address in the form agent@domain</li>
+                    <li><strong>recipients</strong> - One or more recipient addresses in the form agent@domain</li>
                 </ul>
-                
+
                 <h4 style="margin: 2rem 0 1rem; color: var(--text-primary);">Optional Fields</h4>
                 <ul class="feature-list">
-                    <li><strong>replyTo</strong> - Address for replies (defaults to 'from')</li>
-                    <li><strong>priority</strong> - Message priority: low, normal, high, urgent</li>
-                    <li><strong>ttl</strong> - Time-to-live in seconds (default: 86400)</li>
-                    <li><strong>schema</strong> - JSON schema URI for payload validation</li>
-                    <li><strong>metadata</strong> - Additional key-value pairs</li>
-                    <li><strong>signature</strong> - Digital signature for message integrity</li>
+                    <li><strong>subject</strong> - Short human-readable summary</li>
+                    <li><strong>schema</strong> - AGNTCY schema ID (agntcy:domain.entity.version) used to validate the payload</li>
+                    <li><strong>payload</strong> - The message content, any JSON value</li>
+                    <li><strong>headers</strong> - Additional key-value metadata</li>
+                    <li><strong>attachments</strong> - File references with filename, content type, size, hash, and URL</li>
+                    <li><strong>coordination</strong> - Turns the message into a workflow: parallel, sequential, or conditional</li>
+                    <li><span><strong>workflow_id</strong>, <strong>response_type</strong> - Used by agents replying to a workflow step</span></li>
+                    <li><strong>in_reply_to</strong> - The message_id being answered</li>
+                </ul>
+
+                <h4 style="margin: 2rem 0 1rem; color: var(--text-primary);">Set by the Gateway</h4>
+                <ul class="feature-list">
+                    <li><span><strong>version</strong>, <strong>message_id</strong> (UUIDv7), <strong>idempotency_key</strong>, <strong>timestamp</strong> - Generated when the sender omits them</span></li>
+                    <li><strong>signature</strong> - Domain signature over the RFC 8785 canonical JSON body (ES256 or RS256), verified against the sender domain's DNS key</li>
                 </ul>
             </div>
         </div>
@@ -263,62 +266,66 @@ curl http://localhost:8080/health</code></pre>
             </div>
             
             <div class="card">
-                <h3 style="margin-bottom: 1.5rem; color: var(--text-primary);">Docker Compose Setup</h3>
+                <h3 style="margin-bottom: 1.5rem; color: var(--text-primary);">Docker Compose with PostgreSQL</h3>
                 <p style="margin-bottom: 1.5rem; color: var(--text-secondary);">
-                    For production deployments, use Docker Compose with external volumes for data persistence.
+                    For production, store messages and workflow state in PostgreSQL so multiple gateway replicas can share it.
+                    Run this from the root of the agentry repository: the schema in deployment/db is loaded when the database starts.
                 </p>
-                
+
                 <div class="code-block">
                     <pre><code># docker-compose.yml
-version: '3.8'
 services:
-  agentry-gateway:
-    image: agentry/gateway:latest
-    container_name: agentry-gateway
+  agentry:
+    image: agentry:latest   # built with make docker-build
     ports:
-      - "8080:8080"
-      - "25:25"    # SMTP
-      - "587:587"  # SMTP submission
+      - "8443:8443"
     environment:
-      - DOMAIN=yourcompany.com
-      - ADMIN_EMAIL=admin@yourcompany.com
-      - DATABASE_URL=postgresql://user:pass@db:5432/agentry
-      - REDIS_URL=redis://redis:6379
-      - LOG_LEVEL=info
+      - AMTP_DOMAIN=yourcompany.com
+      - AMTP_TLS_ENABLED=true
+      - AMTP_TLS_CERT_FILE=/app/certs/tls.crt
+      - AMTP_TLS_KEY_FILE=/app/certs/tls.key
+      - AMTP_ADMIN_KEY_FILE=/app/keys/admin.keys
+      - AMTP_STORAGE_TYPE=database
+      - AMTP_STORAGE_DATABASE_DRIVER=pgx
+      - AMTP_STORAGE_DATABASE_CONNECTION_STRING=host=postgres port=5432 user=agentry password=change-me dbname=agentry
+      - AMTP_LOG_LEVEL=info
     volumes:
-      - ./config:/app/config
-      - ./data:/app/data
-      - ./logs:/app/logs
+      - ./certs:/app/certs:ro
+      - ./keys:/app/keys:ro
     depends_on:
-      - db
-      - redis
+      postgres:
+        condition: service_healthy
     restart: unless-stopped
 
-  db:
-    image: postgres:15
+  postgres:
+    image: postgres:16
     environment:
-      - POSTGRES_DB=agentry
-      - POSTGRES_USER=agentry
-      - POSTGRES_PASSWORD=secure_password
+      POSTGRES_USER: agentry
+      POSTGRES_PASSWORD: change-me
+      POSTGRES_DB: agentry
     volumes:
+      - ./deployment/db:/docker-entrypoint-initdb.d:ro
       - postgres_data:/var/lib/postgresql/data
-
-  redis:
-    image: redis:7-alpine
-    volumes:
-      - redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agentry"]
+      interval: 10s
+      retries: 5
 
 volumes:
-  postgres_data:
-  redis_data:</code></pre>
+  postgres_data:</code></pre>
                 </div>
-                
+
+                <p style="margin-top: 1.5rem; color: var(--text-secondary);">
+                    On Kubernetes, use the Helm chart in deployment/chart. To make your domain reachable, publish
+                    <code>_amtp.yourcompany.com. IN TXT "v=amtp1;gateway=https://amtp.yourcompany.com:443"</code>.
+                </p>
+
                 <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 2rem;">
-                    <a href="https://github.com/amtp-protocol/agentry" class="btn btn-primary" target="_blank">
+                    <a href="https://github.com/amtp-protocol/agentry/blob/main/docs/DEPLOYMENT.md" class="btn btn-primary" target="_blank">
                         <i data-lucide="github"></i>
-                        Full Setup Guide
+                        Full Deployment Guide
                     </a>
-                    <a href="#api-reference" class="btn btn-secondary">
+                    <a href="https://github.com/amtp-protocol/agentry/blob/main/docs/API.md" class="btn btn-secondary" target="_blank">
                         <i data-lucide="book"></i>
                         API Reference
                     </a>

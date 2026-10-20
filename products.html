@@ -1,6 +1,7 @@
 ---
 layout: default
-title: "Products"
+title: "Agentry Gateway, Cloud, and Enterprise"
+description: "Open-source Agentry Gateway, managed Agentry Cloud, and enterprise deployments for AMTP: federated agent messaging and multi-agent workflow orchestration."
 ---
 
 <main>
@@ -62,7 +63,6 @@ title: "Products"
                             <li>Schema validation via AGNTCY framework</li>
                             <li>Dynamic workflow orchestration (parallel, sequential, conditional)</li>
                             <li>Push (webhook) and pull (inbox) delivery</li>
-                            <li>Built-in SMTP bridge for legacy systems</li>
                         </ul>
                     </div>
                     
@@ -83,20 +83,25 @@ title: "Products"
                 </div>
                 
                 <div class="code-block" style="margin: 2rem 0;">
-                    <pre><code># Quick Start with Docker
-docker run -d \
-  --name agentry-gateway \
-  -p 8080:8080 \
-  -e DOMAIN=yourcompany.com \
-  agentry/gateway:latest
+                    <pre><code># Build and run the gateway
+git clone https://github.com/amtp-protocol/agentry.git && cd agentry
+make docker-build
+mkdir -p keys && openssl rand -hex 32 > keys/admin.keys
+docker run -d --name agentry -p 8443:8443 \
+  -e AMTP_DOMAIN=yourcompany.com \
+  -e AMTP_TLS_ENABLED=false \
+  -e AMTP_ADMIN_KEY_FILE=/app/keys/admin.keys \
+  -v $(pwd)/keys:/app/keys:ro \
+  agentry:latest
 
-# Configure your first agent
-curl -X POST http://localhost:8080/api/agents \
+# Register your first agent (push delivery to your webhook)
+curl -X POST http://localhost:8443/v1/admin/agents \
   -H "Content-Type: application/json" \
+  -H "X-Admin-Key: $(cat keys/admin.keys)" \
   -d '{
-    "name": "workflow-bot",
-    "domain": "yourcompany.com",
-    "webhook": "https://your-app.com/webhook"
+    "address": "workflow-bot",
+    "delivery_mode": "push",
+    "push_target": "https://your-app.com/webhook"
   }'</code></pre>
                 </div>
                 
