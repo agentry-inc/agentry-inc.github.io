@@ -4,6 +4,7 @@ description: >-
   Building infrastructure for the agentic internet with AMTP protocol and Agentry gateway.
 baseurl: ""
 url: "https://agentry.site" # Set to your custom domain
+logo: /assets/images/logo.png
 
 # Build settings
 markdown: kramdown

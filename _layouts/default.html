@@ -4,9 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {% seo %}
+    {% if page.url == "/" %}
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Agentry, Inc.",
+      "url": "https://agentry.site/",
+      "logo": "https://agentry.site/assets/images/logo.png",
+      "description": "Orchestration and messaging infrastructure for multi-agent AI systems, built on the AMTP protocol.",
+      "email": "cwang@agentry.site",
+      "founder": {
+        "@type": "Person",
+        "name": "Cong Wang",
+        "jobTitle": "Founder and CEO",
+        "sameAs": "https://www.linkedin.com/in/cong-wang-b96762b/"
+      },
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "99 S Almaden Blvd, Suite 600",
+        "addressLocality": "San Jose",
+        "addressRegion": "CA",
+        "postalCode": "95113",
+        "addressCountry": "US"
+      },
+      "sameAs": ["https://github.com/amtp-protocol"]
+    }
+    </script>
+    {% endif %}
     <link rel="stylesheet" href="/assets/css/styles.css">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <!-- Using a specific versioned CDN for Lucide icons -->
-    <script src="https://cdn.jsdelivr.net/npm/lucide-static@0.269.0/dist/umd/lucide.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/lucide@0.269.0/dist/umd/lucide.min.js"></script>
     <!-- Add Google Fonts for modern tech aesthetic -->
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Add Fira Code for code snippets -->
@@ -18,7 +48,7 @@
             <nav>
                 <div class="logo-container">
                     <div class="logo">
-                        <img src="/assets/images/logo.png" alt="Agentry Logo" class="logo-icon" style="height: 32px; width: auto;">
+                        <img src="/assets/images/logo-64.png" alt="Agentry Logo" class="logo-icon" style="height: 32px; width: auto;">
                         <span class="logo-text">Agentry</span>
                     </div>
                 </div>
@@ -49,7 +79,7 @@
             <div class="footer-content">
                 <div class="footer-brand">
                     <div class="footer-logo">
-                        <img src="/assets/images/logo.png" alt="Agentry Logo" class="logo-icon" style="height: 28px; width: auto;">
+                        <img src="/assets/images/logo-64.png" alt="Agentry Logo" class="logo-icon" style="height: 28px; width: auto;">
                         <span class="logo-text">Agentry</span>
                     </div>
                     <p>Building infrastructure for the agentic internet</p>

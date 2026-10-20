@@ -2,6 +2,15 @@
 layout: default
 title: "Contact Agentry"
 description: "Talk to Agentry about Agentry Cloud, enterprise deployments, or the open-source gateway. Reach the team at cwang@agentry.site or our San Jose, CA office."
+faq:
+  - question: "What is AMTP and how is it different from existing protocols?"
+    answer: "AMTP (Agent Message Transfer Protocol) is a federated, asynchronous protocol specifically designed for agent-to-agent communication. Unlike email (SMTP) which is human-centric, or API brokers like Kafka which require centralized infrastructure, AMTP provides structured, schema-aware messaging with built-in security and reliability features tailored for autonomous systems."
+  - question: "Is Agentry Gateway really open source?"
+    answer: "Yes! Agentry Gateway is 100% open source under the Apache 2.0 license. You can view, modify, and distribute the code freely. Our commercial offerings (Agentry Cloud and Enterprise Solutions) provide managed infrastructure and additional features on top of the open-source foundation."
+  - question: "How do I get started with AMTP?"
+    answer: "The easiest way to get started is to deploy our open-source Agentry Gateway using Docker. Check out our GitHub repository for quick start guides, sample configurations, and documentation. For managed infrastructure, you can start a free trial of Agentry Cloud."
+  - question: "What kind of support do you offer?"
+    answer: "We offer community support through GitHub issues and discussions for open-source users. Agentry Cloud customers get email support with SLA guarantees. Enterprise customers receive dedicated support, including phone support, custom integrations, and 24/7 monitoring."
 ---
 
 <main>
@@ -182,45 +191,17 @@ description: "Talk to Agentry about Agentry Cloud, enterprise deployments, or th
             </div>
             
             <div style="max-width: 800px; margin: 0 auto;">
+                {% for item in page.faq %}
                 <details class="card" style="margin-bottom: 1rem; cursor: pointer;">
                     <summary style="font-weight: 600; font-size: 1.125rem; padding: 1rem; display: flex; align-items: center; gap: 1rem;">
                         <i data-lucide="help-circle" style="color: var(--primary-color);"></i>
-                        What is AMTP and how is it different from existing protocols?
+                        {{ item.question }}
                     </summary>
                     <div style="padding: 0 1rem 1rem 3rem; color: var(--text-secondary); line-height: 1.6;">
-                        AMTP (Agent Message Transfer Protocol) is a federated, asynchronous protocol specifically designed for agent-to-agent communication. Unlike email (SMTP) which is human-centric, or API brokers like Kafka which require centralized infrastructure, AMTP provides structured, schema-aware messaging with built-in security and reliability features tailored for autonomous systems.
+                        {{ item.answer }}
                     </div>
                 </details>
-                
-                <details class="card" style="margin-bottom: 1rem; cursor: pointer;">
-                    <summary style="font-weight: 600; font-size: 1.125rem; padding: 1rem; display: flex; align-items: center; gap: 1rem;">
-                        <i data-lucide="help-circle" style="color: var(--primary-color);"></i>
-                        Is Agentry Gateway really open source?
-                    </summary>
-                    <div style="padding: 0 1rem 1rem 3rem; color: var(--text-secondary); line-height: 1.6;">
-                        Yes! Agentry Gateway is 100% open source under the Apache 2.0 license. You can view, modify, and distribute the code freely. Our commercial offerings (Agentry Cloud and Enterprise Solutions) provide managed infrastructure and additional features on top of the open-source foundation.
-                    </div>
-                </details>
-                
-                <details class="card" style="margin-bottom: 1rem; cursor: pointer;">
-                    <summary style="font-weight: 600; font-size: 1.125rem; padding: 1rem; display: flex; align-items: center; gap: 1rem;">
-                        <i data-lucide="help-circle" style="color: var(--primary-color);"></i>
-                        How do I get started with AMTP?
-                    </summary>
-                    <div style="padding: 0 1rem 1rem 3rem; color: var(--text-secondary); line-height: 1.6;">
-                        The easiest way to get started is to deploy our open-source Agentry Gateway using Docker. Check out our GitHub repository for quick start guides, sample configurations, and documentation. For managed infrastructure, you can start a free trial of Agentry Cloud.
-                    </div>
-                </details>
-                
-                <details class="card" style="margin-bottom: 1rem; cursor: pointer;">
-                    <summary style="font-weight: 600; font-size: 1.125rem; padding: 1rem; display: flex; align-items: center; gap: 1rem;">
-                        <i data-lucide="help-circle" style="color: var(--primary-color);"></i>
-                        What kind of support do you offer?
-                    </summary>
-                    <div style="padding: 0 1rem 1rem 3rem; color: var(--text-secondary); line-height: 1.6;">
-                        We offer community support through GitHub issues and discussions for open-source users. Agentry Cloud customers get email support with SLA guarantees. Enterprise customers receive dedicated support, including phone support, custom integrations, and 24/7 monitoring.
-                    </div>
-                </details>
+                {% endfor %}
             </div>
         </div>
     </section>
@@ -250,3 +231,17 @@ description: "Talk to Agentry about Agentry Cloud, enterprise deployments, or th
         </div>
     </section>
 </main>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [{% for item in page.faq %}
+    {
+      "@type": "Question",
+      "name": {{ item.question | jsonify }},
+      "acceptedAnswer": { "@type": "Answer", "text": {{ item.answer | jsonify }} }
+    }{% unless forloop.last %},{% endunless %}{% endfor %}
+  ]
+}
+</script>
