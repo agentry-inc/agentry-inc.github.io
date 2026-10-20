@@ -235,7 +235,7 @@ style: |
 **Cong Wang**
 Founder and CEO, Agentry, Inc.
 
-AGNTCon North America
+AGNTCon North America 2026
 
 <img src="images/agentry-logo.png" class="logo">
 <div class="bg-pattern"></div>
@@ -673,6 +673,7 @@ td.next h3 { color: #f59e0b; }
 
 Gateway: [github.com/amtp-protocol/agentry](https://github.com/amtp-protocol/agentry)
 Protocol: [github.com/amtp-protocol/amtp](https://github.com/amtp-protocol/amtp)
+Contact: [cwang@agentry.site](mailto:cwang@agentry.site)
 
 Apache 2.0, contributions welcome.
 
