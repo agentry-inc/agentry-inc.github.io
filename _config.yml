@@ -23,3 +23,4 @@ exclude:
   - Gemfile.lock
   - vendor/
   - .force-deploy
+  - slides/
