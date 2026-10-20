@@ -114,124 +114,8 @@ curl -X POST http://localhost:8080/api/agents \
         </div>
     </section>
 
-    <!-- Dynamic Workflow Orchestration -->
-    <section id="orchestration" class="section" style="background: var(--bg-secondary);">
-        <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">Dynamic Workflow Orchestration</h2>
-                <p class="section-subtitle">
-                    Run multi-agent workflows that are generated at runtime. The plan is data on a message, and the gateway executes it.
-                </p>
-            </div>
-
-            <div class="card">
-                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
-                    <div class="feature-icon" style="font-size: 3rem;">
-                        <i data-lucide="workflow"></i>
-                    </div>
-                    <div>
-                        <h3 style="font-size: 2rem; margin-bottom: 0.5rem;">Workflow Orchestration</h3>
-                        <p style="color: var(--text-secondary); font-size: 1.125rem;">New • Built into Agentry Gateway and Agentry Cloud</p>
-                    </div>
-                </div>
-
-                <p style="font-size: 1.125rem; margin-bottom: 2rem; line-height: 1.7;">
-                    AI planners now write workflows on the fly, and static DAG engines cannot run a graph that only exists at runtime.
-                    Agentry closes that gap. Attach a <strong>coordination</strong> block to any AMTP message and the gateway fans out,
-                    waits, branches, enforces deadlines, and returns aggregated results to the sender. Workflow state lives in the gateway,
-                    not in the planner's context window.
-                </p>
-
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin: 2rem 0;">
-                    <div style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); padding: 1.5rem;">
-                        <h4 style="color: var(--text-primary); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
-                            <i data-lucide="git-fork" style="color: var(--primary-color);"></i>
-                            Parallel
-                        </h4>
-                        <p style="color: var(--text-secondary);">Fan out to every participant at once. The workflow completes when all required responses arrive.</p>
-                    </div>
-                    <div style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); padding: 1.5rem;">
-                        <h4 style="color: var(--text-primary); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
-                            <i data-lucide="list-ordered" style="color: var(--primary-color);"></i>
-                            Sequential
-                        </h4>
-                        <p style="color: var(--text-secondary);">One agent at a time. Each reply triggers dispatch of the next step in the sequence.</p>
-                    </div>
-                    <div style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--border-radius-lg); padding: 1.5rem;">
-                        <h4 style="color: var(--text-primary); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
-                            <i data-lucide="split" style="color: var(--primary-color);"></i>
-                            Conditional
-                        </h4>
-                        <p style="color: var(--text-secondary);">Evaluate an agent's reply and run one branch, such as synthesis or human review. The other is marked skipped.</p>
-                    </div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin: 2rem 0;">
-                    <div>
-                        <h4 style="color: var(--text-primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                            <i data-lucide="shield-check" style="color: var(--success-color);"></i>
-                            Built for Failure
-                        </h4>
-                        <ul class="feature-list">
-                            <li>Deadlines: unanswered steps time out and the sender is notified</li>
-                            <li>Stop on failure ends a workflow early on any step error</li>
-                            <li>Idempotent step dispatch, duplicates dropped by receivers</li>
-                            <li>Optimistic concurrency across gateway replicas</li>
-                            <li>Forged or duplicate replies are ignored</li>
-                            <li>Per-message retries with exponential backoff</li>
-                        </ul>
-                    </div>
-
-                    <div>
-                        <h4 style="color: var(--text-primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                            <i data-lucide="network" style="color: var(--accent-color);"></i>
-                            Fits Your Stack
-                        </h4>
-                        <ul class="feature-list">
-                            <li>Planner emits JSON, one POST starts the workflow</li>
-                            <li>Agents in LangGraph, CrewAI, or plain code</li>
-                            <li>Spans teams and organizations via federated AMTP</li>
-                            <li>Only signed, authenticated senders advance a workflow</li>
-                            <li>Complements MCP (tools) and A2A (agent wire)</li>
-                            <li>Coming next: shared context between agents and composite plans</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="code-block" style="margin: 2rem 0;">
-                    <pre><code># Branch on a critic's verdict
-{
-  "sender": "planner@acme.com",
-  "recipients": ["critic@acme.com"],
-  "coordination": {
-    "type": "conditional",
-    "timeout": 300,
-    "conditions": [{
-      "if": "confident == true",
-      "then": ["synthesis@acme.com"],
-      "else": ["human-review@acme.com"]
-    }]
-  },
-  "payload": { "draft": "..." }
-}</code></pre>
-                </div>
-
-                <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 2rem;">
-                    <a href="https://github.com/amtp-protocol/agentry" class="btn btn-primary" target="_blank">
-                        <i data-lucide="github"></i>
-                        Get Started on GitHub
-                    </a>
-                    <a href="/contact.html" class="btn btn-secondary">
-                        <i data-lucide="mail"></i>
-                        Talk to Us
-                    </a>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- Agentry Cloud -->
-    <section id="cloud" class="section">
+    <section id="cloud" class="section" style="background: var(--bg-secondary);">
         <div class="container">
             <div class="section-header">
                 <h2 class="section-title">Agentry Cloud</h2>
@@ -325,7 +209,7 @@ curl -X POST http://localhost:8080/api/agents \
     </section>
 
     <!-- Enterprise Solutions -->
-    <section id="enterprise" class="section" style="background: var(--bg-secondary);">
+    <section id="enterprise" class="section">
         <div class="container">
             <div class="section-header">
                 <h2 class="section-title">Enterprise Solutions</h2>
@@ -420,7 +304,7 @@ curl -X POST http://localhost:8080/api/agents \
     </section>
 
     <!-- Comparison Table -->
-    <section class="section">
+    <section class="section" style="background: var(--bg-secondary);">
         <div class="container">
             <div class="section-header">
                 <h2 class="section-title">Choose Your Solution</h2>
@@ -483,7 +367,7 @@ curl -X POST http://localhost:8080/api/agents \
     </section>
 
     <!-- CTA Section -->
-    <section class="section" style="background: var(--bg-secondary);">
+    <section class="section">
         <div class="container">
             <div class="section-header">
                 <h2 class="section-title">Ready to Get Started?</h2>
