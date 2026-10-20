@@ -3,6 +3,7 @@ layout: default
 title: "AMTP and Agentry Gateway Documentation"
 description: "Deploy Agentry Gateway with Docker, register agents, send AMTP messages, and run parallel, sequential, and conditional multi-agent workflows in minutes."
 ---
+{% assign gh = "https://github.com/amtp-protocol/agentry/blob/main/docs/" %}
 
 <main>
     <!-- Hero Section -->
@@ -13,205 +14,199 @@ description: "Deploy Agentry Gateway with Docker, register agents, send AMTP mes
                     <i data-lucide="book-open"></i>
                     <span>Documentation</span>
                 </div>
-                
-                <h1>AMTP Protocol & Agentry Gateway</h1>
-                <p class="hero-subtitle">Complete documentation for building with the agentic internet</p>
+
+                <h1>Agentry Gateway Documentation</h1>
+                <p class="hero-subtitle">Run the gateway, connect your agents, and orchestrate multi-agent workflows.</p>
                 <p class="hero-description">
-                    Everything you need to understand, implement, and deploy AMTP-based solutions. 
-                    From protocol specifications to deployment guides and API references.
+                    Agentry Gateway implements AMTP v1.0: agents get an agent@domain address, messages are delivered across
+                    organizations through DNS discovery and domain signatures, and workflows run in the gateway.
                 </p>
+
+                <div class="doc-nav" role="navigation" aria-label="On this page">
+                    <a href="#quick-start">Quick Start</a>
+                    <a href="#concepts">Core Concepts</a>
+                    <a href="#message-format">Message Format</a>
+                    <a href="#workflows">Workflows</a>
+                    <a href="#deployment">Deployment</a>
+                    <a href="#api">API Reference</a>
+                    <a href="#guides">Guides</a>
+                </div>
             </div>
         </div>
     </section>
 
     <!-- Quick Start -->
-    <section class="section">
+    <section id="quick-start" class="section">
         <div class="container">
             <div class="section-header">
                 <h2 class="section-title">Quick Start</h2>
                 <p class="section-subtitle">
-                    Get up and running with AMTP in minutes.
+                    Run a gateway locally, register two agents, and deliver your first message.
+                    You need Docker, Git, and OpenSSL.
                 </p>
             </div>
-            
+
             <div class="card">
-                <h3 style="margin-bottom: 1.5rem; color: var(--text-primary);">Deploy Agentry Gateway with Docker</h3>
+                <h3 style="margin-bottom: 1rem; color: var(--text-primary);">1. Build and run the gateway</h3>
+                <p style="color: var(--text-secondary);">
+                    The admin API stays closed until an admin key file is configured, so create one first.
+                </p>
                 <div class="code-block">
                     <pre><code># Build the image
 git clone https://github.com/amtp-protocol/agentry.git && cd agentry
 make docker-build
 
-# Create an admin key and run the gateway
+# Create an admin key and start the gateway
 mkdir -p keys && openssl rand -hex 32 > keys/admin.keys
-docker run -d --name agentry -p 8443:8443 \
-  -e AMTP_DOMAIN=yourcompany.com \
+export ADMIN_KEY=$(cat keys/admin.keys)
+docker run -d -p 8443:8443 \
+  -e AMTP_DOMAIN=localhost \
   -e AMTP_TLS_ENABLED=false \
   -e AMTP_ADMIN_KEY_FILE=/app/keys/admin.keys \
   -v $(pwd)/keys:/app/keys:ro \
   agentry:latest
 
-# Check status
-curl http://localhost:8443/health
-
-# Register a pull-mode agent (the response contains its api_key)
-curl -X POST http://localhost:8443/v1/admin/agents \
-  -H "Content-Type: application/json" \
-  -H "X-Admin-Key: $(cat keys/admin.keys)" \
-  -d '{"address": "assistant", "delivery_mode": "pull"}'
-
-# Read its inbox
-curl -H "Authorization: Bearer &lt;api_key&gt;" \
-  http://localhost:8443/v1/inbox/assistant@yourcompany.com</code></pre>
+curl http://localhost:8443/health</code></pre>
                 </div>
-                
+
+                <h3 style="margin: 2rem 0 1rem; color: var(--text-primary);">2. Register two agents</h3>
+                <p style="color: var(--text-secondary);">
+                    A short address like <code>alice</code> becomes <code>alice@localhost</code>. Each response contains the agent's
+                    <code>api_key</code>, which the agent uses to send messages and read its inbox.
+                </p>
+                <div class="code-block">
+                    <pre><code>for name in alice bob; do
+  curl -X POST http://localhost:8443/v1/admin/agents \
+    -H "Content-Type: application/json" \
+    -H "X-Admin-Key: $ADMIN_KEY" \
+    -d "{\"address\": \"$name\", \"delivery_mode\": \"pull\"}"
+done
+
+# Save the keys from the responses
+export ALICE_KEY=...
+export BOB_KEY=...</code></pre>
+                </div>
+
+                <h3 style="margin: 2rem 0 1rem; color: var(--text-primary);">3. Send a message</h3>
+                <p style="color: var(--text-secondary);">
+                    Senders on the gateway's own domain authenticate with their agent API key.
+                </p>
+                <div class="code-block">
+                    <pre><code>curl -X POST http://localhost:8443/v1/messages \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $ALICE_KEY" \
+  -d '{
+    "sender": "alice@localhost",
+    "recipients": ["bob@localhost"],
+    "subject": "Hello",
+    "payload": {"text": "Hello from Alice"}
+  }'</code></pre>
+                </div>
+
+                <h3 style="margin: 2rem 0 1rem; color: var(--text-primary);">4. Read and acknowledge</h3>
+                <p style="color: var(--text-secondary);">
+                    Pull-mode agents poll their inbox and acknowledge each message once it is handled.
+                </p>
+                <div class="code-block">
+                    <pre><code>curl -H "Authorization: Bearer $BOB_KEY" \
+  http://localhost:8443/v1/inbox/bob@localhost
+
+curl -X DELETE -H "Authorization: Bearer $BOB_KEY" \
+  http://localhost:8443/v1/inbox/bob@localhost/&lt;message_id&gt;</code></pre>
+                </div>
+
                 <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 2rem;">
-                    <a href="https://github.com/amtp-protocol/agentry" class="btn btn-primary" target="_blank">
+                    <a href="{{ gh }}GETTING_STARTED.md" class="btn btn-primary" target="_blank">
                         <i data-lucide="github"></i>
-                        View on GitHub
+                        Full Getting Started Guide
                     </a>
-                    <a href="#protocol-spec" class="btn btn-secondary">
-                        <i data-lucide="book"></i>
-                        Protocol Spec
+                    <a href="https://github.com/amtp-protocol/amtp-python-sdk" class="btn btn-secondary" target="_blank">
+                        <i data-lucide="code"></i>
+                        Python SDK
                     </a>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Documentation Sections -->
-    <section class="section" style="background: var(--bg-secondary);">
+    <!-- Core Concepts -->
+    <section id="concepts" class="section" style="background: var(--bg-secondary);">
         <div class="container">
             <div class="section-header">
-                <h2 class="section-title">Documentation Sections</h2>
+                <h2 class="section-title">Core Concepts</h2>
                 <p class="section-subtitle">
-                    Comprehensive guides for every aspect of AMTP and Agentry.
+                    AMTP borrows what email got right about talking to strangers, and adds structure and coordination.
                 </p>
             </div>
-            
-            <div class="card-grid">
+
+            <div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
                 <div class="card">
                     <div class="feature-icon">
-                        <i data-lucide="file-text"></i>
+                        <i data-lucide="at-sign"></i>
                     </div>
-                    <h3>Protocol Specification</h3>
-                    <p>Complete AMTP v1.0 protocol specification including message format, delivery guarantees, and security requirements.</p>
+                    <h3>Addressing and Discovery</h3>
                     <ul class="feature-list">
-                        <li>Message structure & format</li>
-                        <li>Delivery guarantees</li>
-                        <li>Security & authentication</li>
-                        <li>Schema validation</li>
+                        <li>Every agent has an agent@domain address</li>
+                        <li><span>A <code>_amtp.&lt;domain&gt;</code> DNS TXT record points to the domain's gateway</span></li>
+                        <li>Each organization runs its own gateway, with no central registry</li>
+                        <li>Behind the gateway, an agent can use any framework or language</li>
                     </ul>
-                    <a href="#protocol-spec" class="btn btn-secondary" style="margin-top: 1rem;">
-                        Read Specification
-                    </a>
                 </div>
-                
+
                 <div class="card">
                     <div class="feature-icon">
-                        <i data-lucide="server"></i>
+                        <i data-lucide="send"></i>
                     </div>
-                    <h3>Gateway Setup</h3>
-                    <p>Deployment guides for Agentry Gateway in various environments and configurations.</p>
+                    <h3>Delivery</h3>
                     <ul class="feature-list">
-                        <li>Docker deployment</li>
-                        <li>Kubernetes setup</li>
-                        <li>Configuration options</li>
-                        <li>Monitoring & logging</li>
+                        <li><span><strong>Push</strong> to the agent's webhook, or <strong>pull</strong> from its inbox</span></li>
+                        <li>At-least-once delivery, with idempotency keys to drop duplicates</li>
+                        <li>Retries with exponential backoff on retryable errors</li>
+                        <li>Per-recipient delivery status for every message</li>
                     </ul>
-                    <a href="#gateway-setup" class="btn btn-secondary" style="margin-top: 1rem;">
-                        Setup Guide
-                    </a>
                 </div>
-                
+
                 <div class="card">
                     <div class="feature-icon">
-                        <i data-lucide="code"></i>
+                        <i data-lucide="shield-check"></i>
                     </div>
-                    <h3>API Reference</h3>
-                    <p>Complete API documentation for Agentry Gateway REST endpoints and webhooks.</p>
+                    <h3>Trust</h3>
                     <ul class="feature-list">
-                        <li>REST API endpoints</li>
-                        <li>Webhook configuration</li>
-                        <li>Authentication methods</li>
-                        <li>Error handling</li>
+                        <li>Local agents authenticate with their own API key</li>
+                        <li>Remote gateways sign each message with the domain's key, like DKIM</li>
+                        <li><span>Public keys are published at <code>&lt;keyid&gt;._amtpkey.&lt;domain&gt;</code></span></li>
+                        <li><span>Unsigned remote mail is accepted, flagged, or rejected by policy</span></li>
                     </ul>
-                    <a href="https://github.com/amtp-protocol/agentry/blob/main/docs/API.md" class="btn btn-secondary" target="_blank" style="margin-top: 1rem;">
-                        API Docs
-                    </a>
                 </div>
-                
+
                 <div class="card">
                     <div class="feature-icon">
                         <i data-lucide="layers"></i>
                     </div>
-                    <h3>Schema Registry</h3>
-                    <p>Understanding and working with AMTP message schemas and validation.</p>
+                    <h3>Schemas</h3>
                     <ul class="feature-list">
-                        <li>Schema definition</li>
-                        <li>Validation rules</li>
-                        <li>Custom schemas</li>
-                        <li>Schema evolution</li>
+                        <li><span>Payloads can declare an AGNTCY schema ID, such as <code>agntcy:commerce.order.v1</code></span></li>
+                        <li>The gateway validates payloads before delivery</li>
+                        <li>Use a local directory or the database as the schema registry</li>
+                        <li>Manage schemas through the admin API</li>
                     </ul>
-                    <a href="https://github.com/amtp-protocol/agentry/blob/main/docs/SCHEMA.md" target="_blank" class="btn btn-secondary" style="margin-top: 1rem;">
-                        Schema Guide
-                    </a>
-                </div>
-                
-                <div class="card">
-                    <div class="feature-icon">
-                        <i data-lucide="shield"></i>
-                    </div>
-                    <h3>Security Guide</h3>
-                    <p>Best practices for securing AMTP communications and gateway deployments.</p>
-                    <ul class="feature-list">
-                        <li>Digital signatures</li>
-                        <li>Encryption at rest</li>
-                        <li>Network security</li>
-                        <li>Access control</li>
-                    </ul>
-                    <a href="https://github.com/amtp-protocol/agentry/blob/main/docs/API.md#security" target="_blank" class="btn btn-secondary" style="margin-top: 1rem;">
-                        Security Guide
-                    </a>
-                </div>
-                
-                <div class="card">
-                    <div class="feature-icon">
-                        <i data-lucide="workflow"></i>
-                    </div>
-                    <h3>Workflow Orchestration</h3>
-                    <p>Run AI-generated multi-agent workflows across frameworks and organizations.</p>
-                    <ul class="feature-list">
-                        <li>Parallel, sequential, conditional</li>
-                        <li>Agent replies and results</li>
-                        <li>Timeouts and failure handling</li>
-                        <li>LangGraph, CrewAI, plain code</li>
-                    </ul>
-                    <a href="/docs/workflow-orchestration.html" class="btn btn-secondary" style="margin-top: 1rem;">
-                        Orchestration Guide
-                    </a>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Protocol Specification Preview -->
-    <section id="protocol-spec" class="section">
+    <!-- Message Format -->
+    <section id="message-format" class="section">
         <div class="container">
             <div class="section-header">
-                <h2 class="section-title">AMTP Protocol Specification</h2>
+                <h2 class="section-title">Message Format</h2>
                 <p class="section-subtitle">
-                    The complete specification for the Agent Message Transfer Protocol v1.0.
+                    An AMTP message is a JSON document. Send one with a single request to your gateway.
                 </p>
             </div>
-            
+
             <div class="card">
-                <h3 style="margin-bottom: 1.5rem; color: var(--text-primary);">Message Format</h3>
-                <p style="margin-bottom: 1.5rem; color: var(--text-secondary);">
-                    AMTP messages are structured JSON documents that contain all necessary information for routing, 
-                    delivery, and processing by autonomous systems.
-                </p>
-                
-                <div class="code-block">
+                <div class="code-block" style="margin-top: 0;">
                     <pre><code>POST /v1/messages
 Authorization: Bearer &lt;sender agent api_key&gt;
 
@@ -228,47 +223,106 @@ Authorization: Bearer &lt;sender agent api_key&gt;
 }</code></pre>
                 </div>
 
-                <h4 style="margin: 2rem 0 1rem; color: var(--text-primary);">Required Fields</h4>
-                <ul class="feature-list">
-                    <li><strong>sender</strong> - Sender address in the form agent@domain</li>
-                    <li><strong>recipients</strong> - One or more recipient addresses in the form agent@domain</li>
-                </ul>
+                <div class="table-wrap">
+                    <table class="compare-table">
+                        <thead>
+                            <tr><th>Field</th><th>Required</th><th>Description</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>sender</td><td>Yes</td><td>Sender address, agent@domain</td></tr>
+                            <tr><td>recipients</td><td>Yes</td><td>One or more recipient addresses</td></tr>
+                            <tr><td>subject</td><td>No</td><td>Short human-readable summary</td></tr>
+                            <tr><td>schema</td><td>No</td><td>AGNTCY schema ID used to validate the payload</td></tr>
+                            <tr><td>payload</td><td>No</td><td>The message content, any JSON value</td></tr>
+                            <tr><td>headers</td><td>No</td><td>Additional key-value metadata</td></tr>
+                            <tr><td>attachments</td><td>No</td><td>File references with filename, content type, size, hash, and URL</td></tr>
+                            <tr><td>coordination</td><td>No</td><td>Turns the message into a workflow, see <a href="#workflows">Workflows</a></td></tr>
+                            <tr><td>workflow_id, response_type</td><td>No</td><td>Set by an agent replying to a workflow step</td></tr>
+                            <tr><td>in_reply_to</td><td>No</td><td>The message_id being answered</td></tr>
+                        </tbody>
+                    </table>
+                </div>
 
-                <h4 style="margin: 2rem 0 1rem; color: var(--text-primary);">Optional Fields</h4>
-                <ul class="feature-list">
-                    <li><strong>subject</strong> - Short human-readable summary</li>
-                    <li><strong>schema</strong> - AGNTCY schema ID (agntcy:domain.entity.version) used to validate the payload</li>
-                    <li><strong>payload</strong> - The message content, any JSON value</li>
-                    <li><strong>headers</strong> - Additional key-value metadata</li>
-                    <li><strong>attachments</strong> - File references with filename, content type, size, hash, and URL</li>
-                    <li><strong>coordination</strong> - Turns the message into a workflow: parallel, sequential, or conditional</li>
-                    <li><span><strong>workflow_id</strong>, <strong>response_type</strong> - Used by agents replying to a workflow step</span></li>
-                    <li><strong>in_reply_to</strong> - The message_id being answered</li>
-                </ul>
-
-                <h4 style="margin: 2rem 0 1rem; color: var(--text-primary);">Set by the Gateway</h4>
-                <ul class="feature-list">
-                    <li><span><strong>version</strong>, <strong>message_id</strong> (UUIDv7), <strong>idempotency_key</strong>, <strong>timestamp</strong> - Generated when the sender omits them</span></li>
-                    <li><strong>signature</strong> - Domain signature over the RFC 8785 canonical JSON body (ES256 or RS256), verified against the sender domain's DNS key</li>
-                </ul>
+                <p style="margin-top: 1.5rem; color: var(--text-secondary);">
+                    The gateway fills in <code>version</code>, <code>message_id</code> (UUIDv7), <code>idempotency_key</code>, and
+                    <code>timestamp</code> when the sender omits them. When a signing key is configured, it adds a
+                    <code>signature</code> over the RFC 8785 canonical JSON body, using ES256 or RS256.
+                </p>
             </div>
         </div>
     </section>
 
-    <!-- Gateway Setup Preview -->
-    <section id="gateway-setup" class="section" style="background: var(--bg-secondary);">
+    <!-- Workflows -->
+    <section id="workflows" class="section" style="background: var(--bg-secondary);">
         <div class="container">
             <div class="section-header">
-                <h2 class="section-title">Gateway Setup Guide</h2>
+                <h2 class="section-title">Workflows</h2>
                 <p class="section-subtitle">
-                    Deploy and configure Agentry Gateway for your environment.
+                    Add a coordination block to any message, and the gateway runs it as a multi-agent workflow.
                 </p>
             </div>
-            
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; align-items: start;">
+                <div class="code-block" style="margin: 0;">
+                    <pre><code>"coordination": {
+  "type": "sequential",
+  "timeout": 900,
+  "sequence": [
+    "research@acme.com",
+    "writer@acme.com",
+    "reviewer@acme.com"
+  ],
+  "stop_on_failure": true
+}</code></pre>
+                </div>
+
+                <div class="table-wrap" style="margin-top: 0;">
+                    <table class="compare-table">
+                        <thead>
+                            <tr><th>Field</th><th>Description</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>type</td><td>parallel, sequential, or conditional</td></tr>
+                            <tr><td>timeout</td><td>Deadline for the whole workflow, in seconds</td></tr>
+                            <tr><td>required_responses</td><td>Parallel: who must answer</td></tr>
+                            <tr><td>optional_responses</td><td>Parallel: who may answer</td></tr>
+                            <tr><td>sequence</td><td>Sequential: agents in order</td></tr>
+                            <tr><td>conditions</td><td>Conditional: if, then, and else branches</td></tr>
+                            <tr><td>stop_on_failure</td><td>End early when a step fails</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <p style="margin-top: 2rem; color: var(--text-secondary);">
+                Agents reply with the <code>workflow_id</code> and <code>response_type: workflow_response</code>, or
+                <code>workflow_error</code> to fail their step. When the workflow ends, the sender receives one message
+                with every participant's status and payload.
+            </p>
+
+            <div style="margin-top: 2rem;">
+                <a href="/docs/workflow-orchestration.html" class="btn btn-primary">
+                    <i data-lucide="workflow"></i>
+                    Workflow Orchestration Guide
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Deployment -->
+    <section id="deployment" class="section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Deployment</h2>
+                <p class="section-subtitle">
+                    Store state in PostgreSQL, terminate TLS at the gateway, and publish DNS records so other organizations can reach you.
+                </p>
+            </div>
+
             <div class="card">
-                <h3 style="margin-bottom: 1.5rem; color: var(--text-primary);">Docker Compose with PostgreSQL</h3>
-                <p style="margin-bottom: 1.5rem; color: var(--text-secondary);">
-                    For production, store messages and workflow state in PostgreSQL so multiple gateway replicas can share it.
+                <h3 style="margin-bottom: 1rem; color: var(--text-primary);">Docker Compose with PostgreSQL</h3>
+                <p style="color: var(--text-secondary);">
+                    Shared PostgreSQL storage lets multiple gateway replicas run the same workflows.
                     Run this from the root of the agentry repository: the schema in deployment/db is loaded when the database starts.
                 </p>
 
@@ -281,14 +335,13 @@ services:
       - "8443:8443"
     environment:
       - AMTP_DOMAIN=yourcompany.com
-      - AMTP_TLS_ENABLED=true
       - AMTP_TLS_CERT_FILE=/app/certs/tls.crt
       - AMTP_TLS_KEY_FILE=/app/certs/tls.key
       - AMTP_ADMIN_KEY_FILE=/app/keys/admin.keys
+      - AMTP_SIGNATURE_PRIVATE_KEY_FILE=/app/keys/signing.pem
       - AMTP_STORAGE_TYPE=database
       - AMTP_STORAGE_DATABASE_DRIVER=pgx
       - AMTP_STORAGE_DATABASE_CONNECTION_STRING=host=postgres port=5432 user=agentry password=change-me dbname=agentry
-      - AMTP_LOG_LEVEL=info
     volumes:
       - ./certs:/app/certs:ro
       - ./keys:/app/keys:ro
@@ -315,83 +368,162 @@ volumes:
   postgres_data:</code></pre>
                 </div>
 
+                <h3 style="margin: 2rem 0 1rem; color: var(--text-primary);">DNS records</h3>
+                <div class="code-block">
+                    <pre><code># Where other gateways deliver mail for your domain
+_amtp.yourcompany.com.        IN TXT "v=amtp1;gateway=https://amtp.yourcompany.com:443"
+
+# Public key that verifies your domain signatures (selector k1)
+k1._amtpkey.yourcompany.com.  IN TXT "v=amtpkey1;alg=ES256;p=&lt;base64-public-key&gt;"</code></pre>
+                </div>
+
+                <h3 style="margin: 2rem 0 1rem; color: var(--text-primary);">Key settings</h3>
+                <div class="table-wrap">
+                    <table class="compare-table">
+                        <thead>
+                            <tr><th>Variable</th><th>Default</th><th>Description</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>AMTP_DOMAIN</td><td>none</td><td>The domain this gateway serves</td></tr>
+                            <tr><td>AMTP_SERVER_ADDRESS</td><td>:8443</td><td>Listen address</td></tr>
+                            <tr><td>AMTP_TLS_ENABLED</td><td>true</td><td>Serve HTTPS, with AMTP_TLS_CERT_FILE and AMTP_TLS_KEY_FILE</td></tr>
+                            <tr><td>AMTP_ADMIN_KEY_FILE</td><td>none</td><td>Admin key file, required for the /v1/admin API</td></tr>
+                            <tr><td>AMTP_STORAGE_TYPE</td><td>memory</td><td>memory or database</td></tr>
+                            <tr><td>AMTP_SIGNATURE_PRIVATE_KEY_FILE</td><td>none</td><td>PEM key for signing outbound mail, empty disables signing</td></tr>
+                            <tr><td>AMTP_SIGNATURE_VERIFY_POLICY</td><td>flag</td><td>Unsigned remote mail: accept, flag, or reject</td></tr>
+                            <tr><td>AMTP_SCHEMA_REGISTRY_TYPE</td><td>none</td><td>local or database to enable schema validation</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
                 <p style="margin-top: 1.5rem; color: var(--text-secondary);">
-                    On Kubernetes, use the Helm chart in deployment/chart. To make your domain reachable, publish
-                    <code>_amtp.yourcompany.com. IN TXT "v=amtp1;gateway=https://amtp.yourcompany.com:443"</code>.
+                    On Kubernetes, use the Helm chart in deployment/chart. Every setting is listed in the
+                    <a href="{{ gh }}CONFIGURATION.md" target="_blank">configuration reference</a>.
                 </p>
 
                 <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 2rem;">
-                    <a href="https://github.com/amtp-protocol/agentry/blob/main/docs/DEPLOYMENT.md" class="btn btn-primary" target="_blank">
+                    <a href="{{ gh }}DEPLOYMENT.md" class="btn btn-primary" target="_blank">
                         <i data-lucide="github"></i>
-                        Full Deployment Guide
+                        Deployment Guide
                     </a>
-                    <a href="https://github.com/amtp-protocol/agentry/blob/main/docs/API.md" class="btn btn-secondary" target="_blank">
-                        <i data-lucide="book"></i>
-                        API Reference
+                    <a href="{{ gh }}DOMAIN_MANAGEMENT.md" class="btn btn-secondary" target="_blank">
+                        <i data-lucide="globe"></i>
+                        Domain Management
                     </a>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Resources -->
-    <section class="section">
+    <!-- API Reference -->
+    <section id="api" class="section" style="background: var(--bg-secondary);">
         <div class="container">
             <div class="section-header">
-                <h2 class="section-title">Additional Resources</h2>
+                <h2 class="section-title">API Reference</h2>
                 <p class="section-subtitle">
-                    Community resources, tools, and helpful links.
+                    A REST API over HTTPS. Agents authenticate with their API key, administrators with the X-Admin-Key header.
                 </p>
             </div>
-            
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 3rem;">
-                <div class="card">
-                    <div class="feature-icon">
-                        <i data-lucide="github"></i>
-                    </div>
-                    <h3>GitHub Repository</h3>
-                    <p>Source code, issues, and community discussions.</p>
-                    <a href="https://github.com/amtp-protocol/agentry" class="btn btn-secondary" target="_blank">
-                        <i data-lucide="external-link"></i>
-                        Visit GitHub
-                    </a>
-                </div>
-                
-                <div class="card">
-                    <div class="feature-icon">
-                        <i data-lucide="message-circle"></i>
-                    </div>
-                    <h3>Community Forum</h3>
-                    <p>Ask questions and share experiences with other developers.</p>
-                    <a href="https://github.com/amtp-protocol/agentry/discussions" class="btn btn-secondary" target="_blank">
-                        <i data-lucide="external-link"></i>
-                        Join Discussion
-                    </a>
-                </div>
 
+            <div class="table-wrap">
+                <table class="compare-table">
+                    <thead>
+                        <tr><th>Endpoint</th><th>Auth</th><th>Purpose</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>POST /v1/messages</td><td>Agent key or domain signature</td><td>Send a message or start a workflow</td></tr>
+                        <tr><td>GET /v1/messages/{id}/status</td><td>Agent or admin key</td><td>Delivery status per recipient</td></tr>
+                        <tr><td>GET /v1/messages, GET /v1/messages/{id}</td><td>Agent or admin key</td><td>List or fetch messages</td></tr>
+                        <tr><td>GET /v1/inbox/{recipient}</td><td>Agent key</td><td>Read a pull-mode inbox</td></tr>
+                        <tr><td>DELETE /v1/inbox/{recipient}/{id}</td><td>Agent key</td><td>Acknowledge a message</td></tr>
+                        <tr><td>POST, GET /v1/admin/agents</td><td>Admin key</td><td>Register or list local agents</td></tr>
+                        <tr><td>DELETE /v1/admin/agents/{address}</td><td>Admin key</td><td>Unregister an agent</td></tr>
+                        <tr><td>POST /v1/admin/agents/{address}/rotate-key</td><td>Admin key</td><td>Rotate an agent's API key</td></tr>
+                        <tr><td>/v1/admin/schemas</td><td>Admin key</td><td>Register, list, update, delete, and validate schemas</td></tr>
+                        <tr><td>GET /v1/capabilities/{domain}</td><td>None</td><td>Discover a domain's gateway capabilities</td></tr>
+                        <tr><td>GET /v1/discovery/agents</td><td>None</td><td>Discover registered agents</td></tr>
+                        <tr><td>GET /health, GET /ready</td><td>None</td><td>Liveness and readiness checks</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="margin-top: 2rem;">
+                <a href="{{ gh }}API.md" class="btn btn-primary" target="_blank">
+                    <i data-lucide="github"></i>
+                    Full API Reference
+                </a>
             </div>
         </div>
     </section>
 
-    <!-- CTA Section -->
+    <!-- Guides -->
+    <section id="guides" class="section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Guides</h2>
+                <p class="section-subtitle">
+                    In-depth references for the gateway, the protocol, and the SDK.
+                </p>
+            </div>
+
+            <div class="card-grid">
+                <a class="card guide-link" href="/docs/workflow-orchestration.html">
+                    <div class="feature-icon"><i data-lucide="workflow"></i></div>
+                    <h3>Workflow Orchestration</h3>
+                    <p>Parallel, sequential, and conditional workflows, agent replies, and failure handling.</p>
+                </a>
+                <a class="card guide-link" href="{{ gh }}CONFIGURATION.md" target="_blank">
+                    <div class="feature-icon"><i data-lucide="settings"></i></div>
+                    <h3>Configuration</h3>
+                    <p>Every command line flag and AMTP_* environment variable, with examples.</p>
+                </a>
+                <a class="card guide-link" href="{{ gh }}SCHEMA.md" target="_blank">
+                    <div class="feature-icon"><i data-lucide="layers"></i></div>
+                    <h3>Schema Framework</h3>
+                    <p>AGNTCY schema IDs, registries, and payload validation.</p>
+                </a>
+                <a class="card guide-link" href="https://github.com/amtp-protocol/amtp" target="_blank">
+                    <div class="feature-icon"><i data-lucide="file-text"></i></div>
+                    <h3>AMTP Specification</h3>
+                    <p>The protocol itself: addressing, delivery, signatures, and coordination.</p>
+                </a>
+                <a class="card guide-link" href="https://github.com/amtp-protocol/amtp-python-sdk" target="_blank">
+                    <div class="feature-icon"><i data-lucide="code"></i></div>
+                    <h3>Python SDK</h3>
+                    <p>Build agents in Python with asyncio. Install with pip install amtp.</p>
+                </a>
+                <a class="card guide-link" href="{{ gh }}DEVELOPMENT.md" target="_blank">
+                    <div class="feature-icon"><i data-lucide="git-pull-request"></i></div>
+                    <h3>Contributing</h3>
+                    <p>Build from source, run the tests, and send a pull request.</p>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Help -->
     <section class="section" style="background: var(--bg-secondary);">
         <div class="container">
             <div class="section-header">
                 <h2 class="section-title">Need Help?</h2>
                 <p class="section-subtitle">
-                    Can't find what you're looking for? We're here to help.
+                    Ask the community on GitHub, or talk to us about Agentry Cloud and enterprise deployments.
                 </p>
             </div>
-            
+
             <div class="text-center">
-                <div class="hero-cta">
-                    <a href="/contact.html" class="btn btn-primary">
-                        <i data-lucide="mail"></i>
-                        Contact Support
+                <div class="hero-cta" style="margin-bottom: 0;">
+                    <a href="https://github.com/amtp-protocol/agentry/discussions" class="btn btn-primary" target="_blank">
+                        <i data-lucide="message-circle"></i>
+                        GitHub Discussions
                     </a>
                     <a href="https://github.com/amtp-protocol/agentry/issues" class="btn btn-secondary" target="_blank">
                         <i data-lucide="github"></i>
-                        Report Issue
+                        Report an Issue
+                    </a>
+                    <a href="/contact.html" class="btn btn-secondary">
+                        <i data-lucide="mail"></i>
+                        Contact Us
                     </a>
                 </div>
             </div>

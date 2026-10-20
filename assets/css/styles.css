@@ -845,6 +845,10 @@ footer {
 }
 
 @media (max-width: 768px) {
+    .code-block::before {
+        display: none;
+    }
+
     .compare-table {
         min-width: 560px;
         font-size: 0.875rem;
@@ -899,4 +903,57 @@ footer {
 
 .steps strong {
     color: var(--text-primary);
+}
+
+/* Docs page */
+.doc-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+.doc-nav a {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 50px;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.doc-nav a:hover {
+    border-color: var(--primary-color);
+    color: var(--text-primary);
+}
+
+.guide-link {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+}
+
+.guide-link p {
+    color: var(--text-secondary);
+}
+
+:not(pre) > code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.875em;
+    color: var(--primary-color);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 0.1em 0.4em;
+}
+
+section[id] {
+    scroll-margin-top: 80px;
+}
+
+.section p a:not(.btn),
+.compare-table a {
+    color: var(--primary-color);
 }
