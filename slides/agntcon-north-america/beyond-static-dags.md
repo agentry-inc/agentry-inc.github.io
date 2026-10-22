@@ -65,6 +65,7 @@ style: |
     color: #ffffff;
   }
   table {
+    display: table;
     font-size: 0.8em;
     border-collapse: collapse;
     width: 100%;
@@ -243,21 +244,21 @@ AGNTCon North America 2026
 
 ---
 
-# Your Planner Just Wrote a Workflow
+# Your LLM Wrote a Plan
 
 ```json
 { "goal": "Should we enter the EU market?",
   "plan": [
     { "parallel": ["market@acme.com", "legal@acme.com", "competitor@partner.io"] },
-    { "if": "confidence > 0.8",
+    { "if": "confident == true",
       "then": "synthesis@acme.com", "else": "human-review@acme.com" } ] }
 ```
 
 **Now what runs it?**
 
 - Who fans out, who waits, and what if `legal@` never answers?
-- How does `synthesis@` see the research?
-- `partner.io` runs CrewAI, we run LangGraph. Now what?
+- Who checks that a reply is real?
+- `partner.io` built its agent on a different framework. Now what?
 
 <img src="images/agentry-logo.png" class="logo">
 <div class="bg-pattern"></div>
@@ -267,15 +268,18 @@ AGNTCon North America 2026
 
 # Every Layer Says "Not My Job"
 
+<style scoped>table { font-size: 0.7em; }</style>
+
 | Tool | Orchestrates | Why it does not run this plan |
 |------|-------------|-------------------------------|
-| Kubernetes | Containers | No notion of a step, a reply, or a dependency |
-| Kubeflow / Argo | Static DAGs | DAG is compiled ahead of time, this plan exists only at runtime |
-| LangGraph / CrewAI | Graphs inside one app | One ecosystem, context wired by hand, stops at your org boundary |
-| A2A | Agent to agent wire | Defines how agents talk, not how work executes |
-| MCP | Agent to tool | Not agent to agent at all |
+| Kubernetes | Containers | No notion of an agent, a reply, or a workflow |
+| Kubeflow / Argo | Container pipelines | Every step is a pod in your cluster, not an agent you address |
+| LangGraph / CrewAI | Agents inside one app | Shared state ends at the app, A2A calls carry no workflow state |
+| Temporal | Workflows as code | You write the interpreter, no agent addressing across orgs |
+| A2A | One agent calling another | No multi-step plan across many agents |
+| MCP | Agent to tool | No multi-agent coordination |
 
-> *The orchestration layer for dynamic multi-agent workflows is missing.*
+> *Nothing runs a generated plan across agents and orgs.*
 
 <img src="images/agentry-logo.png" class="logo">
 <div class="bg-pattern"></div>
@@ -312,89 +316,7 @@ Frameworks build the agent. MCP gives it tools. **Agentry runs the work between 
 <!-- _class: divider -->
 <p class="kicker">Part 1</p>
 
-# AMTP: Email for Agents
-
-Addressing, delivery, and trust across organizations
-
----
-
-# Why Email?
-
-Email already solved the hard parts of talking to strangers:
-
-| Email | AMTP |
-|-------|------|
-| `alice@acme.com` | `market@acme.com` |
-| MX record | `_amtp.<domain>` TXT record |
-| Store and forward, retries, bounces | At-least-once delivery, idempotency, status API |
-| DKIM | Domain signatures, keys in DNS |
-| No central registry | No central registry |
-
-What email lacks: structured payloads, schemas, and **coordination**. AMTP adds all three.
-
-<img src="images/agentry-logo.png" class="logo">
-<div class="bg-pattern"></div>
-<div class="footer">Agentry, Inc.</div>
-
----
-
-# Addressing by DNS
-
-```
-_amtp.acme.com.        IN TXT "v=amtp1;gateway=https://gw.acme.com:443"
-k1._amtpkey.acme.com.  IN TXT "v=amtpkey1;alg=ES256;p=<base64-public-key>"
-```
-
-- Sending gateway resolves `_amtp.<domain>`, caches it, POSTs to `/v1/messages`
-- Each organization runs its own gateway, no shared control plane
-- Behind a gateway, an agent is just an address: any framework, any language
-- **Push** to the agent's webhook, or let it **pull** from `GET /v1/inbox/{address}`
-
-<img src="images/agentry-logo.png" class="logo">
-<div class="bg-pattern"></div>
-<div class="footer">Agentry, Inc.</div>
-
----
-
-# The Gateway Owns Delivery
-
-- **At-least-once:** UUIDv7 `message_id` plus `idempotency_key`, duplicates dropped
-- **Retries:** exponential backoff, ±25% jitter, capped at 5 minutes, only on retryable errors
-- **Status:** `GET /v1/messages/{id}/status`, per recipient
-- **Schemas:** AGNTCY schema IDs, payloads validated at the gateway
-- **Deploy:** single binary, Docker, Helm chart, PostgreSQL for replicas
-
-Your agent code handles one message and sends one reply. The gateway handles the network.
-
-<img src="images/agentry-logo.png" class="logo">
-<div class="bg-pattern"></div>
-<div class="footer">Agentry, Inc.</div>
-
----
-
-# Trust Across Organizations
-
-**Domain signatures, DKIM for agents:**
-
-- Sender's gateway signs the body: RFC 8785 JSON, ES256 or RS256
-- Receiver fetches `<selector>._amtpkey.<sender domain>`, verifies the raw bytes
-- Gateway stamps `verified` or `invalid` itself, never trusts the wire
-- Policy for unsigned remote mail: `accept`, `flag`, or `reject`
-- Local agents authenticate with a per-agent API key
-- Delivered is not trusted: an unsigned reply never advances a workflow
-
-> *Partners sign to join a workflow. A forged "I'm done" is ignored.*
-
-<img src="images/agentry-logo.png" class="logo">
-<div class="bg-pattern"></div>
-<div class="footer">Agentry, Inc.</div>
-
----
-
-<!-- _class: divider -->
-<p class="kicker">Part 2</p>
-
-# Running a Plan Generated at Runtime
+# Running the Plan
 
 The workflow is data, not code
 
@@ -412,7 +334,9 @@ A workflow is a `coordination` block on an ordinary message:
 | `sequential` | `sequence` | One agent at a time, next step dispatched on each reply |
 | `conditional` | `recipients`, `conditions: [{if, then, else}]` | Evaluate the first reply, run one branch, mark the other skipped |
 
-Common to all: `timeout` and `stop_on_failure`. **The planner emits JSON, the gateway runs it.**
+Common to all: `timeout` and `stop_on_failure`.
+
+The planner emits JSON, the gateway runs it.
 
 <img src="images/agentry-logo.png" class="logo">
 <div class="bg-pattern"></div>
@@ -437,7 +361,7 @@ Common to all: `timeout` and `stop_on_failure`. **The planner emits JSON, the ga
 }
 ```
 
-One `POST /v1/messages`. The response carries a `workflow_id`, and the planner is done until results come back.
+One `POST /v1/messages` returns a `workflow_id`. With the results in, the planner sends the conditional as a second workflow, until composite plans land.
 
 <img src="images/agentry-logo.png" class="logo">
 <div class="bg-pattern"></div>
@@ -472,16 +396,16 @@ Agents reply with `response_type: workflow_response`, or `workflow_error` to fai
 
 ---
 
-# Built for Failure
+# When Things Go Wrong
 
 <style scoped>table { font-size: 0.7em; }</style>
 
 | What goes wrong | What Agentry does |
 |-----------------|-------------------|
-| An agent never answers | Deadline sweeper marks workflow and pending steps `timeout`, notifies the sender |
+| An agent never answers | Deadline sweeper marks pending steps `timeout`, notifies the sender |
 | An agent fails | `workflow_error` reply, `stop_on_failure` ends the workflow early |
 | A step is re-dispatched | Idempotency key = hash(workflow, step), receivers deduplicate |
-| Two replicas, two replies, same instant | Optimistic version check on shared PostgreSQL, loser retries |
+| Two replies race on two replicas | Optimistic version check on shared PostgreSQL, loser retries |
 | Duplicate or forged reply | Dropped: participant not pending, or sender not authenticated |
 | Network blip | Per-message retries with exponential backoff |
 
@@ -506,7 +430,7 @@ Agents reply with `response_type: workflow_response`, or `workflow_error` to fai
 - `critic@` replies, the gateway evaluates `if` against its payload
 - Matching branch is dispatched, the other is marked `skipped`
 - Today: `key == value` on the reply payload
-- Next: numeric comparisons, so the plan can say `confidence > 0.8` directly
+- Next: numeric comparisons, such as `confidence > 0.8`
 
 <img src="images/agentry-logo.png" class="logo">
 <div class="bg-pattern"></div>
@@ -538,15 +462,80 @@ Agents reply with `response_type: workflow_response`, or `workflow_error` to fai
 ---
 
 <!-- _class: divider -->
+<p class="kicker">Part 2</p>
+
+# AMTP: Email for Agents
+
+Addressing, delivery, and trust across organizations
+
+---
+
+# Why Email?
+
+Email already solved the hard parts of talking to strangers:
+
+| Email | AMTP |
+|-------|------|
+| `alice@acme.com` | `market@acme.com` |
+| MX record | `_amtp.<domain>` TXT record points to the gateway |
+| Store and forward, retries, bounces | At-least-once delivery, idempotency, status API |
+| DKIM | Domain signatures, keys in `<selector>._amtpkey.<domain>` |
+| No central registry | Each org runs its own gateway, no shared control plane |
+
+Email lacks two things agents need: schema-validated payloads and coordination.
+
+<img src="images/agentry-logo.png" class="logo">
+<div class="bg-pattern"></div>
+<div class="footer">Agentry, Inc.</div>
+
+---
+
+# The Gateway Owns Delivery
+
+- **At-least-once:** UUIDv7 `message_id` plus `idempotency_key`, duplicates dropped
+- **Retries:** exponential backoff, ±25% jitter, 5 minute cap, retryable errors only
+- **Status:** `GET /v1/messages/{id}/status`, per recipient
+- **Inbox:** push to the agent's webhook, or let it pull from `GET /v1/inbox/{address}`
+- **Schemas:** AGNTCY schema IDs, payloads validated at the gateway
+- **Deploy:** single binary, Docker, Helm chart, PostgreSQL for durable storage
+
+Your agent code handles one message and sends one reply. The gateway handles the network.
+
+<img src="images/agentry-logo.png" class="logo">
+<div class="bg-pattern"></div>
+<div class="footer">Agentry, Inc.</div>
+
+---
+
+# Trust Across Organizations
+
+**Domain signatures, DKIM for agents:**
+
+- Sender's gateway signs the body: RFC 8785 JSON, ES256 or RS256
+- Receiver fetches `<selector>._amtpkey.<sender domain>`, verifies the raw bytes
+- Gateway stamps `verified` or `invalid` itself, never trusts the wire
+- Policy for unsigned remote mail: `accept`, `flag`, or `reject`
+- Local agents authenticate with a per-agent API key
+- Delivered is not trusted: an unsigned reply never advances a workflow
+
+> *Partners sign to join a workflow. A forged "I'm done" is ignored.*
+
+<img src="images/agentry-logo.png" class="logo">
+<div class="bg-pattern"></div>
+<div class="footer">Agentry, Inc.</div>
+
+---
+
+<!-- _class: divider -->
 <p class="kicker">Part 3</p>
 
 # Fitting Your Stack
 
-MCP, A2A, your framework, and Agentry
+Your agents, your framework, and Agentry
 
 ---
 
-# Plugging In an Agent
+# Adding an Agent
 
 Register once: `POST /v1/admin/agents {"address": "market", "delivery_mode": "push", "push_target": ...}`
 
@@ -566,24 +555,6 @@ def on_message(msg: dict):
 ```
 
 Plain HTTP shown, so any language works. Python SDK: `pip install amtp`
-
-<img src="images/agentry-logo.png" class="logo">
-<div class="bg-pattern"></div>
-<div class="footer">Agentry, Inc.</div>
-
----
-
-# How It Fits with MCP and A2A
-
-| Layer | Question it answers | Example |
-|-------|--------------------|---------|
-| MCP | How does an agent call a tool? | Search, database, code runner |
-| Framework | How is one agent built? | LangGraph, CrewAI, your own loop |
-| A2A | How do two agents talk? | Agent cards, tasks, streaming |
-| **Agentry / AMTP** | **How does a multi-agent plan execute, across orgs?** | Addressing, durable delivery, workflow state, signatures |
-| Kubernetes | Where do the processes run? | Pods, scaling, restarts |
-
-Complementary, not competing: keep your agents and tools, add the layer that runs the plan.
 
 <img src="images/agentry-logo.png" class="logo">
 <div class="bg-pattern"></div>
