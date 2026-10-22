@@ -244,7 +244,7 @@ AGNTCon North America 2026
 
 ---
 
-# The New Business Automation
+# AI-Era Business Automation
 
 <style scoped>
 table.cols { width: 100%; font-size: 0.85em; border-collapse: separate; border-spacing: 24px 0; margin: 0 -24px; background: none; }
@@ -273,6 +273,7 @@ td.next h3 { color: #f59e0b; }
 <ul>
 <li>Part X is short: a planner agent decides who to ask, at runtime</li>
 <li>Every hop crosses a company, a stack, and a trust boundary</li>
+<li>Scales to a whole supply chain: suppliers, logistics, customers</li>
 </ul>
 </td>
 </tr></table>
@@ -540,6 +541,7 @@ Agents reply with `response_type: workflow_response`, or `workflow_error` to fai
 | Two replies race on two replicas | Optimistic version check on shared PostgreSQL, loser retries |
 | Duplicate or forged reply | Dropped: participant not pending, or sender not authenticated |
 | Network blip | Per-message retries with exponential backoff |
+| Planner skips a required step | Rejected on submission (planned) |
 
 > *State lives in the gateway, not in the planner's context window.*
 
@@ -564,6 +566,30 @@ Agents reply with `response_type: workflow_response`, or `workflow_error` to fai
 - `purchasing@` then sends the order to the winning supplier
 - Today: `key == value` on the reply payload
 - Next: numeric comparisons, such as `total_price < 50000`
+
+<img src="images/agentry-logo.png" class="logo">
+<div class="bg-pattern"></div>
+<div class="footer">Agentry, Inc.</div>
+
+---
+
+# Plans Must Pass Policy <span class="badge">In progress</span>
+
+```yaml
+- recipient: purchasing@acme.com
+  only_via: { conditional: { if: "within_budget == true", branch: then,
+                             else_must_include: [approver@acme.com] } }
+```
+
+```json
+{ "error": "POLICY_DENIED", "rule": "over-budget-needs-approver" }
+```
+
+- A plan without the over-budget approver is rejected before it runs
+- Protected agents refuse direct sends, only approved workflows reach them
+- YAML for common rules, WASM plugins for the rest
+
+> *The LLM proposes. Your policy decides.*
 
 <img src="images/agentry-logo.png" class="logo">
 <div class="bg-pattern"></div>
@@ -683,7 +709,7 @@ td.next h3 { color: #f59e0b; }
 <li>Context shared between agents</li>
 <li>Context Graph</li>
 <li>Composite plans</li>
-<li>WASM plugins</li>
+<li>Plan policy checks (YAML, WASM)</li>
 <li>SMTP bridge: humans by email</li>
 </ul>
 </td>
@@ -701,7 +727,7 @@ td.next h3 { color: #f59e0b; }
 - Treat the workflow as **data on a message**: parallel, sequential, conditional
 - Borrow from email: `agent@domain`, DNS discovery, store and forward, signed domains
 - Keep state, timeouts, and retries in the gateway, not in a context window
-- Next frontier: context shared between agents automatically
+- Check every plan against company policy before it runs
 
 > *Frameworks build agents. Protocols connect them. Agentry runs the work between them.*
 
