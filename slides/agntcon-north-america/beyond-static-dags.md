@@ -356,7 +356,7 @@ k1._amtpkey.acme.com.  IN TXT "v=amtpkey1;alg=ES256;p=<base64-public-key>"
 
 ---
 
-# Delivery, Built In
+# The Gateway Owns Delivery
 
 - **At-least-once:** UUIDv7 `message_id` plus `idempotency_key`, duplicates dropped
 - **Retries:** exponential backoff, ±25% jitter, capped at 5 minutes, only on retryable errors
@@ -378,8 +378,9 @@ Your agent code handles one message and sends one reply. The gateway handles the
 
 - Sender's gateway signs the body: RFC 8785 JSON, ES256 or RS256
 - Receiver fetches `<selector>._amtpkey.<sender domain>`, verifies the raw bytes
-- Gateway stamps the result on the message, never trusts the wire: `verified`, `invalid`, ...
-- Unsigned remote mail: `accept`, `flag`, or `reject`. Local agents: per-agent API key
+- Gateway stamps `verified` or `invalid` itself, never trusts the wire
+- Policy for unsigned remote mail: `accept`, `flag`, or `reject`
+- Local agents authenticate with a per-agent API key
 - Delivered is not trusted: an unsigned reply never advances a workflow
 
 > *Partners sign to join a workflow. A forged "I'm done" is ignored.*
