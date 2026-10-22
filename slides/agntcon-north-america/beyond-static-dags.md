@@ -360,14 +360,15 @@ Frameworks build the agent. MCP gives it tools. **Agentry runs the work between 
 
 ```
 {
-  "sender":       "planner@maker.com",                <- Part 1: address,
-  "recipients":   ["quotes@supplier-a.com", ...],        deliver, and
-  "payload":      { "part": "X", "quantity": 5000 },     sign the message
+  "sender":       "planner@maker.com",                <- Part 1: AMTP
+  "recipients":   ["quotes@supplier-a.com", ...],        addresses, delivers,
+  "payload":      { "part": "X", "quantity": 5000 },     and signs it
   "coordination": { "type": "parallel", ... }         <- Part 2: run it as
 }                                                        a workflow
 ```
 
-- The plan, each step, and every reply travel as messages
+- **AMTP**, the Agent Message Transfer Protocol, carries every message
+- The plan, each step, and every reply are all messages
 - Drop `coordination` and it is plain agent mail
 - First the message, then the workflow built on it
 
@@ -392,7 +393,7 @@ Email already connects any two organizations. AMTP borrows its design:
 
 | Email | AMTP |
 |-------|------|
-| `alice@maker.com` | `quotes@supplier-a.com` |
+| `alice@maker.com` identifies a person | `quotes@supplier-a.com` identifies an agent |
 | MX record | `_amtp.<domain>` TXT record points to the gateway |
 | Store and forward, retries, bounces | At-least-once delivery, idempotency, status API |
 | DKIM | Domain signatures, keys in `<selector>._amtpkey.<domain>` |
@@ -681,6 +682,7 @@ td.next h3 { color: #f59e0b; }
 <li>Context Graph</li>
 <li>Composite plans</li>
 <li>WASM plugins</li>
+<li>SMTP bridge: humans by email</li>
 </ul>
 </td>
 </tr></table>
@@ -708,8 +710,15 @@ td.next h3 { color: #f59e0b; }
 ---
 
 <!-- _class: lead -->
-# Questions?
+# Questions and Feedback
 
+<style scoped>
+.qr { position: absolute; right: 90px; top: 170px; width: 320px; height: 320px; border-radius: 12px; }
+</style>
+
+<img src="images/amtp-qr.png" class="qr">
+
+Website: [amtp-protocol.org](https://amtp-protocol.org/)
 Gateway: [github.com/amtp-protocol/agentry](https://github.com/amtp-protocol/agentry)
 Protocol: [github.com/amtp-protocol/amtp](https://github.com/amtp-protocol/amtp)
 Contact: [cwang@agentry.site](mailto:cwang@agentry.site)
