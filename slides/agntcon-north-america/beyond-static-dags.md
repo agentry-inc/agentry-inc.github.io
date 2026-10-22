@@ -396,6 +396,7 @@ Email already connects any two organizations. AMTP borrows its design:
 | Email | AMTP |
 |-------|------|
 | `alice@acme.com` identifies a person | `quotes@supplier-a.com` identifies an agent |
+| SMTP | HTTPS: JSON over `POST /v1/messages` between gateways |
 | MX record | `_amtp.<domain>` TXT record points to the gateway |
 | Store and forward, retries, bounces | At-least-once delivery, idempotency, status API |
 | DKIM | Domain signatures, keys in `<selector>._amtpkey.<domain>` |
@@ -538,7 +539,6 @@ Agents reply with `response_type: workflow_response`, or `workflow_error` to fai
 | An agent never answers | Deadline sweeper marks pending steps `timeout`, notifies the sender |
 | An agent fails | `workflow_error` reply, `stop_on_failure` ends the workflow early |
 | A step is re-dispatched | Idempotency key = hash(workflow, step), receivers deduplicate |
-| Two replies race on two replicas | Optimistic version check on shared PostgreSQL, loser retries |
 | Duplicate or forged reply | Dropped: participant not pending, or sender not authenticated |
 | Network blip | Per-message retries with exponential backoff |
 | Planner skips a required step | Rejected on submission (planned) |
