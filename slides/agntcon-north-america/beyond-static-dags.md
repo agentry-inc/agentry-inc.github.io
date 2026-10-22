@@ -244,21 +244,64 @@ AGNTCon North America 2026
 
 ---
 
-# Your LLM Wrote a Plan
+# The New Business Automation
+
+<style scoped>
+table.cols { width: 100%; font-size: 0.85em; border-collapse: separate; border-spacing: 24px 0; margin: 0 -24px; background: none; }
+table.cols tr { background: none; }
+table.cols td { width: 50%; vertical-align: top; padding: 8px 22px 4px 22px; border-radius: 12px; }
+table.cols h3 { font-size: 1.05em; font-weight: 700; margin: 6px 0 12px 0; }
+table.cols ul { margin: 0; padding-left: 1.2em; }
+table.cols li { margin-bottom: 0.5em; }
+td.today { background-color: #1e1e1e; border: 1px solid #2a2a2a; border-top: 4px solid #00d4ff; }
+td.today h3 { color: #00d4ff; }
+td.next { background-color: #1e1e1e; border: 1px solid #2a2a2a; border-top: 4px solid #f59e0b; }
+td.next h3 { color: #f59e0b; }
+</style>
+
+<table class="cols"><tr>
+<td class="today">
+<h3>Today: inside one organization</h3>
+<ul>
+<li>Coding, support, and research agents</li>
+<li>One company, one stack, one trust boundary</li>
+<li>A framework is enough</li>
+</ul>
+</td>
+<td class="next">
+<h3>Tomorrow: across organizations</h3>
+<ul>
+<li>Part X is short: a planner agent decides who to ask, at runtime</li>
+<li>Every hop crosses a company, a stack, and a trust boundary</li>
+</ul>
+</td>
+</tr></table>
+
+> *Soon, agents will do business with other companies' agents.*
+
+<img src="images/agentry-logo.png" class="logo">
+<div class="bg-pattern"></div>
+<div class="footer">Agentry, Inc.</div>
+
+---
+
+# Business at Agent Speed
+
+Part X is short. Your planner agent writes this plan on the fly:
 
 ```json
-{ "goal": "Should we enter the EU market?",
+{ "goal": "Part X is short 5,000 units",
   "plan": [
-    { "parallel": ["market@acme.com", "legal@acme.com", "competitor@partner.io"] },
-    { "if": "confident == true",
-      "then": "synthesis@acme.com", "else": "human-review@acme.com" } ] }
+    { "parallel": ["quotes@supplier-a.com", "quotes@supplier-b.com", "stock@maker.com"] },
+    { "ask": "buyer@maker.com", "if": "within_budget == true",
+      "then": "purchasing@maker.com", "else": "approver@maker.com" } ] }
 ```
 
 **Now what runs it?**
 
-- Who fans out, who waits, and what if `legal@` never answers?
-- Who checks that a reply is real?
-- `partner.io` built its agent on a different framework. Now what?
+- Who fans out, who waits, and what if `supplier-b` never answers?
+- Who checks that a quote is real?
+- Each supplier built its agents on a different stack. Now what?
 
 <img src="images/agentry-logo.png" class="logo">
 <div class="bg-pattern"></div>
@@ -290,19 +333,19 @@ AGNTCon North America 2026
 # Where Agentry Sits
 
 ```
-                 planner@acme.com  (any LLM, emits a plan as JSON)
+                 planner@maker.com  (any LLM, emits a plan as JSON)
                           |
                           v
-          +-------------------------------+        +---------------------+
-          |   Agentry gateway  acme.com   |<------>| gateway  partner.io |
-          | addressing, delivery, state,  |  AMTP  +---------------------+
-          | timeouts, signatures          |                  |
-          +-------------------------------+         competitor@partner.io
-             |              |             |              (CrewAI)
-       market@acme.com  legal@acme.com  synthesis@acme.com
-         (LangGraph)    (plain Python)    (anything)
-             |              |
-          MCP tools      MCP tools
+          +-------------------------------+  AMTP  +-------------------------+
+          |   Agentry gateway  maker.com  |<------>| gateway  supplier-a.com |
+          | addressing, delivery, state,  |        +-------------------------+
+          | timeouts, signatures          |<------>| gateway  supplier-b.com |
+          +-------------------------------+        +-------------------------+
+             |               |              |
+      stock@maker.com  buyer@maker.com  purchasing@maker.com
+       (any framework)   (any LLM)        (plain Python)
+             |
+         MCP tools
 ```
 
 Frameworks build the agent. MCP gives it tools. **Agentry runs the work between agents.**
@@ -313,156 +356,29 @@ Frameworks build the agent. MCP gives it tools. **Agentry runs the work between 
 
 ---
 
+# Everything Is a Message
+
+```
+{
+  "sender":       "planner@maker.com",                <- Part 1: address,
+  "recipients":   ["quotes@supplier-a.com", ...],        deliver, and
+  "payload":      { "part": "X", "quantity": 5000 },     sign the message
+  "coordination": { "type": "parallel", ... }         <- Part 2: run it as
+}                                                        a workflow
+```
+
+- The plan, each step, and every reply travel as messages
+- Drop `coordination` and it is plain agent mail
+- First the message, then the workflow built on it
+
+<img src="images/agentry-logo.png" class="logo">
+<div class="bg-pattern"></div>
+<div class="footer">Agentry, Inc.</div>
+
+---
+
 <!-- _class: divider -->
 <p class="kicker">Part 1</p>
-
-# Running the Plan
-
-The workflow is data, not code
-
----
-
-# Three Coordination Primitives
-
-<style scoped>table { font-size: 0.7em; }</style>
-
-A workflow is a `coordination` block on an ordinary message:
-
-| Type | Fields | Semantics |
-|------|--------|-----------|
-| `parallel` | `required_responses`, `optional_responses` | Fan out to all, finish when every participant has answered |
-| `sequential` | `sequence` | One agent at a time, next step dispatched on each reply |
-| `conditional` | `recipients`, `conditions: [{if, then, else}]` | Evaluate the first reply, run one branch, mark the other skipped |
-
-Common to all: `timeout` and `stop_on_failure`.
-
-The planner emits JSON, the gateway runs it.
-
-<img src="images/agentry-logo.png" class="logo">
-<div class="bg-pattern"></div>
-<div class="footer">Agentry, Inc.</div>
-
----
-
-# From Plan to Message
-
-```json
-{
-  "sender": "planner@acme.com",
-  "recipients": ["market@acme.com", "legal@acme.com", "competitor@partner.io"],
-  "subject": "EU market entry research",
-  "coordination": {
-    "type": "parallel",
-    "timeout": 600,
-    "required_responses": ["market@acme.com", "legal@acme.com", "competitor@partner.io"],
-    "stop_on_failure": true
-  },
-  "payload": { "question": "Should we enter the EU market?" }
-}
-```
-
-One `POST /v1/messages` returns a `workflow_id`. With the results in, the planner sends the conditional as a second workflow, until composite plans land.
-
-<img src="images/agentry-logo.png" class="logo">
-<div class="bg-pattern"></div>
-<div class="footer">Agentry, Inc.</div>
-
----
-
-# The Workflow Lifecycle
-
-```
-POST /v1/messages { coordination }
-   |
-   |- Initialize: workflow_id (UUIDv7), participants, deadline  -> storage
-   |
-   |- Dispatch step(s) ----------------------------------> agents (push / pull)
-   |                                                           |
-   |  <---- reply { workflow_id, response_type } --------------'
-   |
-   |- ProcessResponse
-   |     sender authenticated?  participant still pending?
-   |     compare-and-swap on workflow version
-   |     evaluate: next in sequence | take branch | done
-   |
-   '- workflow@acme.com --> planner@acme.com : aggregated results
-```
-
-Agents reply with `response_type: workflow_response`, or `workflow_error` to fail their step.
-
-<img src="images/agentry-logo.png" class="logo">
-<div class="bg-pattern"></div>
-<div class="footer">Agentry, Inc.</div>
-
----
-
-# When Things Go Wrong
-
-<style scoped>table { font-size: 0.7em; }</style>
-
-| What goes wrong | What Agentry does |
-|-----------------|-------------------|
-| An agent never answers | Deadline sweeper marks pending steps `timeout`, notifies the sender |
-| An agent fails | `workflow_error` reply, `stop_on_failure` ends the workflow early |
-| A step is re-dispatched | Idempotency key = hash(workflow, step), receivers deduplicate |
-| Two replies race on two replicas | Optimistic version check on shared PostgreSQL, loser retries |
-| Duplicate or forged reply | Dropped: participant not pending, or sender not authenticated |
-| Network blip | Per-message retries with exponential backoff |
-
-> *State lives in the gateway, not in the planner's context window.*
-
-<img src="images/agentry-logo.png" class="logo">
-<div class="bg-pattern"></div>
-<div class="footer">Agentry, Inc.</div>
-
----
-
-# Conditionals
-
-```json
-"recipients": ["critic@acme.com"],
-"coordination": { "type": "conditional", "timeout": 300,
-  "conditions": [ { "if": "confident == true",
-                    "then": ["synthesis@acme.com"],
-                    "else": ["human-review@acme.com"] } ] }
-```
-
-- `critic@` replies, the gateway evaluates `if` against its payload
-- Matching branch is dispatched, the other is marked `skipped`
-- Today: `key == value` on the reply payload
-- Next: numeric comparisons, such as `confidence > 0.8`
-
-<img src="images/agentry-logo.png" class="logo">
-<div class="bg-pattern"></div>
-<div class="footer">Agentry, Inc.</div>
-
----
-
-# Shared Context <span class="badge">In progress</span>
-
-**Today:** replies are stored per step, the sender gets them all at the end:
-
-```json
-{ "workflow_id": "0199...", "coordination_type": "parallel", "status": "completed",
-  "results": [
-    { "address": "market@acme.com", "status": "completed", "payload": { } },
-    { "address": "legal@acme.com",  "status": "completed", "payload": { } } ] }
-```
-
-**Next:**
-
-- Context shared between agents in a workflow: `synthesis@` sees the research, no wiring
-- Token-aware selection and summarization of what gets forwarded
-- Composite plans: parallel, then conditional, as one workflow
-
-<img src="images/agentry-logo.png" class="logo">
-<div class="bg-pattern"></div>
-<div class="footer">Agentry, Inc.</div>
-
----
-
-<!-- _class: divider -->
-<p class="kicker">Part 2</p>
 
 # AMTP: Email for Agents
 
@@ -472,11 +388,11 @@ Addressing, delivery, and trust across organizations
 
 # Why Email?
 
-Email already solved the hard parts of talking to strangers:
+Email already connects any two organizations. AMTP borrows its design:
 
 | Email | AMTP |
 |-------|------|
-| `alice@acme.com` | `market@acme.com` |
+| `alice@maker.com` | `quotes@supplier-a.com` |
 | MX record | `_amtp.<domain>` TXT record points to the gateway |
 | Store and forward, retries, bounces | At-least-once delivery, idempotency, status API |
 | DKIM | Domain signatures, keys in `<selector>._amtpkey.<domain>` |
@@ -518,7 +434,156 @@ Your agent code handles one message and sends one reply. The gateway handles the
 - Local agents authenticate with a per-agent API key
 - Delivered is not trusted: an unsigned reply never advances a workflow
 
-> *Partners sign to join a workflow. A forged "I'm done" is ignored.*
+> *Suppliers sign their quotes. A forged quote is ignored.*
+
+<img src="images/agentry-logo.png" class="logo">
+<div class="bg-pattern"></div>
+<div class="footer">Agentry, Inc.</div>
+
+---
+
+<!-- _class: divider -->
+<p class="kicker">Part 2</p>
+
+# Running the Plan
+
+The workflow is data, not code
+
+---
+
+# Three Coordination Primitives
+
+<style scoped>table { font-size: 0.7em; }</style>
+
+A workflow is a `coordination` block on an ordinary message:
+
+| Type | Fields | Semantics |
+|------|--------|-----------|
+| `parallel` | `required_responses`, `optional_responses` | Fan out to all, finish when every participant has answered |
+| `sequential` | `sequence` | One agent at a time, next step dispatched on each reply |
+| `conditional` | `recipients`, `conditions: [{if, then, else}]` | Evaluate the first reply, run one branch, mark the other skipped |
+
+Common to all: `timeout` and `stop_on_failure`.
+
+The planner emits JSON, the gateway runs it.
+
+<img src="images/agentry-logo.png" class="logo">
+<div class="bg-pattern"></div>
+<div class="footer">Agentry, Inc.</div>
+
+---
+
+# From Plan to Message
+
+```json
+{
+  "sender": "planner@maker.com",
+  "recipients": ["quotes@supplier-a.com", "quotes@supplier-b.com", "stock@maker.com"],
+  "subject": "Quote request: part X",
+  "coordination": {
+    "type": "parallel",
+    "timeout": 86400,
+    "required_responses": ["quotes@supplier-a.com", "quotes@supplier-b.com",
+                           "stock@maker.com"],
+    "stop_on_failure": false
+  },
+  "payload": { "part": "X", "quantity": 5000, "needed_by": "2026-11-20" }
+}
+```
+
+One `POST /v1/messages` returns a `workflow_id`. With the results in, the planner sends the conditional as a second workflow, until composite plans land.
+
+<img src="images/agentry-logo.png" class="logo">
+<div class="bg-pattern"></div>
+<div class="footer">Agentry, Inc.</div>
+
+---
+
+# The Workflow Lifecycle
+
+```
+POST /v1/messages { coordination }
+   |
+   |- Initialize: workflow_id (UUIDv7), participants, deadline  -> storage
+   |
+   |- Dispatch step(s) ----------------------------------> agents (push / pull)
+   |                                                           |
+   |  <---- reply { workflow_id, response_type } --------------'
+   |
+   |- ProcessResponse
+   |     sender authenticated?  participant still pending?
+   |     compare-and-swap on workflow version
+   |     evaluate: next in sequence | take branch | done
+   |
+   '- workflow@maker.com --> planner@maker.com : aggregated results
+```
+
+Agents reply with `response_type: workflow_response`, or `workflow_error` to fail their step.
+
+<img src="images/agentry-logo.png" class="logo">
+<div class="bg-pattern"></div>
+<div class="footer">Agentry, Inc.</div>
+
+---
+
+# When Things Go Wrong
+
+<style scoped>table { font-size: 0.7em; }</style>
+
+| What goes wrong | What Agentry does |
+|-----------------|-------------------|
+| An agent never answers | Deadline sweeper marks pending steps `timeout`, notifies the sender |
+| An agent fails | `workflow_error` reply, `stop_on_failure` ends the workflow early |
+| A step is re-dispatched | Idempotency key = hash(workflow, step), receivers deduplicate |
+| Two replies race on two replicas | Optimistic version check on shared PostgreSQL, loser retries |
+| Duplicate or forged reply | Dropped: participant not pending, or sender not authenticated |
+| Network blip | Per-message retries with exponential backoff |
+
+> *State lives in the gateway, not in the planner's context window.*
+
+<img src="images/agentry-logo.png" class="logo">
+<div class="bg-pattern"></div>
+<div class="footer">Agentry, Inc.</div>
+
+---
+
+# Conditionals
+
+```json
+"recipients": ["buyer@maker.com"],
+"coordination": { "type": "conditional", "timeout": 3600,
+  "conditions": [ { "if": "within_budget == true",
+                    "then": ["purchasing@maker.com"],
+                    "else": ["approver@maker.com"] } ] }
+```
+
+- `buyer@` compares the quotes and replies, the gateway evaluates `if` against its payload
+- Matching branch is dispatched, the other is marked `skipped`
+- Today: `key == value` on the reply payload
+- Next: numeric comparisons, such as `total_price < 50000`
+
+<img src="images/agentry-logo.png" class="logo">
+<div class="bg-pattern"></div>
+<div class="footer">Agentry, Inc.</div>
+
+---
+
+# Shared Context <span class="badge">In progress</span>
+
+**Today:** replies are stored per step, the sender gets them all at the end:
+
+```json
+{ "workflow_id": "0199...", "coordination_type": "parallel", "status": "timeout",
+  "results": [
+    { "address": "quotes@supplier-a.com", "status": "completed", "payload": { } },
+    { "address": "quotes@supplier-b.com", "status": "timeout",   "payload": null } ] }
+```
+
+**Next:**
+
+- Context shared between agents in a workflow: `buyer@` sees every quote, no wiring
+- Token-aware selection and summarization of what gets forwarded
+- Composite plans: parallel, then conditional, as one workflow
 
 <img src="images/agentry-logo.png" class="logo">
 <div class="bg-pattern"></div>
@@ -537,16 +602,16 @@ Your agents, your framework, and Agentry
 
 # Adding an Agent
 
-Register once: `POST /v1/admin/agents {"address": "market", "delivery_mode": "push", "push_target": ...}`
+Register once: `POST /v1/admin/agents {"address": "stock", "delivery_mode": "push", "push_target": ...}`
 
 ```python
 @app.post("/webhook")                       # Agentry pushes here
 def on_message(msg: dict):
-    result = research_graph.invoke(msg["payload"])   # LangGraph, CrewAI, plain code
+    result = check_inventory(msg["payload"])         # any framework, or plain code
     requests.post(f"{GATEWAY}/v1/messages",
         headers={"Authorization": f"Bearer {API_KEY}"},
         json={
-            "sender": "market@acme.com",
+            "sender": "stock@maker.com",
             "recipients": [msg["sender"]],
             "workflow_id": msg["workflow_id"],
             "response_type": "workflow_response",
@@ -585,7 +650,8 @@ Plain HTTP shown, so any language works. Python SDK: `pip install amtp`
 # Today and Next
 
 <style scoped>
-table.cols { width: 100%; font-size: 0.9em; border-collapse: separate; border-spacing: 24px 0; margin: 0 -24px; }
+table.cols { width: 100%; font-size: 0.9em; border-collapse: separate; border-spacing: 24px 0; margin: 0 -24px; background: none; }
+table.cols tr { background: none; }
 table.cols td { width: 50%; vertical-align: top; padding: 8px 22px 4px 22px; border-radius: 12px; }
 table.cols h3 { font-size: 1.05em; font-weight: 700; margin: 6px 0 12px 0; }
 table.cols ul { margin: 0; padding-left: 1.2em; }
