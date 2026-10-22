@@ -287,14 +287,15 @@ td.next h3 { color: #f59e0b; }
 
 # Business at Agent Speed
 
-Part X is short. Your planner agent writes this plan on the fly:
+Acme builds cars and buys part X from two suppliers. Its planner agent writes:
 
 ```json
-{ "goal": "Part X is short 5,000 units",
+{ "goal": "Buy 5,000 more units of part X",
   "plan": [
-    { "parallel": ["quotes@supplier-a.com", "quotes@supplier-b.com", "stock@maker.com"] },
-    { "ask": "buyer@maker.com", "if": "within_budget == true",
-      "then": "purchasing@maker.com", "else": "approver@maker.com" } ] }
+    { "parallel": ["quotes@supplier-a.com", "quotes@supplier-b.com", "stock@acme.com"] },
+    { "recipients": ["buyer@acme.com"], "if": "within_budget == true",
+      "then": ["purchasing@acme.com"], "else": ["approver@acme.com"] },
+    { "purchasing@acme.com": "order from the winning supplier" } ] }
 ```
 
 **Now what runs it?**
@@ -333,16 +334,16 @@ Part X is short. Your planner agent writes this plan on the fly:
 # Where Agentry Sits
 
 ```
-                 planner@maker.com  (any LLM, emits a plan as JSON)
+                 planner@acme.com   (any LLM, emits a plan as JSON)
                           |
                           v
           +-------------------------------+  AMTP  +-------------------------+
-          |   Agentry gateway  maker.com  |<------>| gateway  supplier-a.com |
+          |   Agentry gateway  acme.com   |<------>| gateway  supplier-a.com |
           | addressing, delivery, state,  |        +-------------------------+
           | timeouts, signatures          |<------>| gateway  supplier-b.com |
           +-------------------------------+        +-------------------------+
              |               |              |
-      stock@maker.com  buyer@maker.com  purchasing@maker.com
+      stock@acme.com   buyer@acme.com   purchasing@acme.com
        (any framework)   (any LLM)        (plain Python)
              |
          MCP tools
@@ -360,7 +361,7 @@ Frameworks build the agent. MCP gives it tools. **Agentry runs the work between 
 
 ```
 {
-  "sender":       "planner@maker.com",                <- Part 1: AMTP
+  "sender":       "planner@acme.com",                 <- Part 1: AMTP
   "recipients":   ["quotes@supplier-a.com", ...],        addresses, delivers,
   "payload":      { "part": "X", "quantity": 5000 },     and signs it
   "coordination": { "type": "parallel", ... }         <- Part 2: run it as
@@ -393,7 +394,7 @@ Email already connects any two organizations. AMTP borrows its design:
 
 | Email | AMTP |
 |-------|------|
-| `alice@maker.com` identifies a person | `quotes@supplier-a.com` identifies an agent |
+| `alice@acme.com` identifies a person | `quotes@supplier-a.com` identifies an agent |
 | MX record | `_amtp.<domain>` TXT record points to the gateway |
 | Store and forward, retries, bounces | At-least-once delivery, idempotency, status API |
 | DKIM | Domain signatures, keys in `<selector>._amtpkey.<domain>` |
@@ -478,14 +479,14 @@ The planner emits JSON, the gateway runs it.
 
 ```json
 {
-  "sender": "planner@maker.com",
-  "recipients": ["quotes@supplier-a.com", "quotes@supplier-b.com", "stock@maker.com"],
+  "sender": "planner@acme.com",
+  "recipients": ["quotes@supplier-a.com", "quotes@supplier-b.com", "stock@acme.com"],
   "subject": "Quote request: part X",
   "coordination": {
     "type": "parallel",
     "timeout": 86400,
     "required_responses": ["quotes@supplier-a.com", "quotes@supplier-b.com",
-                           "stock@maker.com"],
+                           "stock@acme.com"],
     "stop_on_failure": false
   },
   "payload": { "part": "X", "quantity": 5000, "needed_by": "2026-11-20" }
@@ -516,7 +517,7 @@ POST /v1/messages { coordination }
    |     compare-and-swap on workflow version
    |     evaluate: next in sequence | take branch | done
    |
-   '- workflow@maker.com --> planner@maker.com : aggregated results
+   '- workflow@acme.com --> planner@acme.com : aggregated results
 ```
 
 Agents reply with `response_type: workflow_response`, or `workflow_error` to fail their step.
@@ -551,15 +552,16 @@ Agents reply with `response_type: workflow_response`, or `workflow_error` to fai
 # Conditionals
 
 ```json
-"recipients": ["buyer@maker.com"],
+"recipients": ["buyer@acme.com"],
 "coordination": { "type": "conditional", "timeout": 3600,
   "conditions": [ { "if": "within_budget == true",
-                    "then": ["purchasing@maker.com"],
-                    "else": ["approver@maker.com"] } ] }
+                    "then": ["purchasing@acme.com"],
+                    "else": ["approver@acme.com"] } ] }
 ```
 
-- `buyer@` compares the quotes and replies, the gateway evaluates `if` against its payload
+- `buyer@` compares the quotes, the gateway evaluates `if` on its reply
 - Matching branch is dispatched, the other is marked `skipped`
+- `purchasing@` then sends the order to the winning supplier
 - Today: `key == value` on the reply payload
 - Next: numeric comparisons, such as `total_price < 50000`
 
@@ -612,7 +614,7 @@ def on_message(msg: dict):
     requests.post(f"{GATEWAY}/v1/messages",
         headers={"Authorization": f"Bearer {API_KEY}"},
         json={
-            "sender": "stock@maker.com",
+            "sender": "stock@acme.com",
             "recipients": [msg["sender"]],
             "workflow_id": msg["workflow_id"],
             "response_type": "workflow_response",
