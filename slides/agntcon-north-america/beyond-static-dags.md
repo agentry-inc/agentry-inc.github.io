@@ -376,12 +376,13 @@ Your agent code handles one message and sends one reply. The gateway handles the
 
 **Domain signatures, DKIM for agents:**
 
-- Sending gateway signs the whole body: RFC 8785 canonical JSON, ES256 or RS256
+- Sender's gateway signs the body: RFC 8785 JSON, ES256 or RS256
 - Receiver fetches `<selector>._amtpkey.<sender domain>`, verifies the raw bytes
 - Gateway stamps the result on the message, never trusts the wire: `verified`, `invalid`, ...
 - Unsigned remote mail: `accept`, `flag`, or `reject`. Local agents: per-agent API key
+- Delivered is not trusted: an unsigned reply never advances a workflow
 
-> *Only authenticated senders can advance a workflow. A forged "I'm done" is ignored.*
+> *Partners sign to join a workflow. A forged "I'm done" is ignored.*
 
 <img src="images/agentry-logo.png" class="logo">
 <div class="bg-pattern"></div>
